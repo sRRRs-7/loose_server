@@ -15,6 +15,7 @@ jobs:
       postgres:
         # Docker Hub image
         image: postgres:15-alpine
+        container_name: postgres
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: secret
@@ -47,8 +48,8 @@ jobs:
       - name: Install sql-migrate
         run: go install github.com/rubenv/sql-migrate/...@latest
 
-      # - name: Run migrations
-      #   run: sql-migrate up -config=sql_migrate.yml
+      - name: Run migrations
+        run: sql-migrate up -config=sql_migrate.yml
 
       - name: Test
         run: make test
