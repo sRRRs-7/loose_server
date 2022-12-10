@@ -1,0 +1,52 @@
+MAKEFILE_DIR = $(dir $(lastword $(MAKEFILE_LIST)))
+DB_URL=postgresql://root:secret@localhost:5432/loose_style?sslmode=disable
+REDIS_URL=redis://root:secret>@localhost:6379/loose_style_redis?sslmode=disable
+
+run:
+	go run main.go
+build:
+	go build main.go
+linker:
+	go run -x main.go
+vendor:
+	go run vendor
+test:
+	go test -v -cover ./...
+pg:
+	docker run --name loose_style -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:15-alpine
+pgrm:
+	docker rm -f loose_style
+createdb:
+	docker exec -it loose_style createdb --username=root --owner=root loose_style
+dropdb:
+	docker exec -it loose_style dropdb loose_style
+migrateinit:
+	sql-migrate new -config=sql_migrate.yml $(arg)
+migratestat:
+	sql-migrate status -config=sql_migrate.yml
+migrateup:
+	sql-migrate up -config=sql_migrate.yml
+migrateup1:
+	sql-migrate up -config=sql_migrate.yml -limit=1
+migratedown:
+	sql-migrate down -config=sql_migrate.yml
+migratedown1:
+	sql-migrate down -config=sql_migrate.yml -limit=1
+sqlc:
+	sqlc generate -f sqlc.yml
+debug:
+	dlv debug main.go
+dlvhelp:
+	dlv help
+redis:
+	docker run --name loose_style_redis -e REDIS_USER=root -e REDIS_PASSWORD=secret -p 6379:6379 -d redis:7.0-alpine
+redisrm:
+	docker rm -f loose_style_redis
+dockerup:
+	docker rmi -f server-api
+	docker-compose up -d
+mock:
+	mockgen -package mockdb -destination db/mock/store.go github.com/sRRRs-7/loose_style.git/db/sqlc Store
+
+.PHONY: run postgres createdb dropdb migrateinit migrateup migratedown migrateup1 migratedown1 sqlc mock debug dlvhelp, redis, redisrm
+

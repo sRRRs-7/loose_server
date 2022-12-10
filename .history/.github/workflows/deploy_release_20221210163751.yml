@@ -11,5 +11,3 @@ jobs:
     steps:
       - name: Build
         run: echo "building... $NAME"
-        env:
-          NAME: go
