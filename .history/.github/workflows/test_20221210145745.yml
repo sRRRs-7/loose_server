@@ -48,7 +48,7 @@ jobs:
         run: go install github.com/rubenv/sql-migrate/...@latest
 
       - name: Run migrations
-        run: sql-migrate up -config=sql_migrate.yml
+        run: make migrateup
 
       - name: Test
         run: make test

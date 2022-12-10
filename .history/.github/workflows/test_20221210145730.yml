@@ -45,10 +45,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install sql-migrate
-        run: go install github.com/rubenv/sql-migrate/...@latest
-
+        run: |
+          go install github.com/rubenv/sql-migrate/...@latest
       - name: Run migrations
-        run: sql-migrate up -config=sql_migrate.yml
+        run: make migrateup
 
       - name: Test
         run: make test
