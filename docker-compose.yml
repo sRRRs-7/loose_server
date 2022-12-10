@@ -1,0 +1,41 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=loose_style
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: redis
+    ports:
+      - 6379:6379
+    depends_on:
+      - postgres
+    volumes:
+      - ./data/redis:/data
+  api:
+    container_name: golang_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    links:
+      - postgres:postgres
+      - redis:redis
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - 8080:8080
+    environment:
+      - DB_SOURCE=postgresql://root:secret@postgres:5432/loose_style?sslmode=disable
+    entrypoint: ["/app/start.sh"]
+    command: ["/app/main"]

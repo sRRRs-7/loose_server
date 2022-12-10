@@ -1,0 +1,11 @@
+development:
+  dialect: postgres
+  datasource: postgresql://root:secret@postgres:5432/loose_style?sslmode=disable
+  dir: db/migrations
+  table: migrations_management
+
+production:
+  dialect: postgres
+  datasource: postgresql://root:secret@postgres:5432/loose_style?sslmode=disable
+  dir: db/migrations
+  table: migrations_management

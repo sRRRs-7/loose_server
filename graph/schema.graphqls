@@ -1,0 +1,253 @@
+type Post {
+  id: ID!
+  title: String!
+  votes: Int!
+  url: String!
+  createdAt: String!
+}
+
+type PostsMeta {
+  count: Int!
+}
+
+# implementation
+
+directive @validation(
+  format: String
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+# all data has unique id
+interface Node {
+  id: ID!
+}
+
+extend type Query {
+  # posts
+  getAllPosts(orderBy: OrderBy, first: Int!, skip: Int!): [Post!]!
+  _allPostsMeta: PostsMeta!
+  # media
+  getAllMedia(first: Int!, skip: Int!): [Media]!
+  # user
+  getUserList(first: Int!, skip: Int!): [User]!
+  # products
+  getAllProducts(first: Int!, skip: Int!): [Product!]!
+  # cart
+  getAllCartItems(first: Int!, skip: Int!): [Product_cartId!]!
+  # order
+  getAllOrders(user_id: String!): [Order!]!
+  getOrder(user_id: String!, product_id: Int!): Order!
+}
+
+extend type Mutation {
+  # posts
+  createPost(title: String!, url: String!): MutationResponse!
+  updatePost(id: ID!, votes: Int!): MutationResponse!
+  # Media
+  createMedia(
+    title: String!
+    contents: String!
+    img: String!
+  ): MutationResponse!
+  updateMedia(
+    id: ID!
+    title: String!
+    contents: String!
+    img: String!
+  ): MutationResponse!
+  # user
+  createUser(
+    user_id: String!
+    password: String!
+    username: String!
+    email: String!
+    sex: String!
+    date_of_birth: String!
+    destination_family_name: String!
+    destination_first_name: String!
+    postcode: Int!
+    prefecture_code: String!
+    city: String!
+    street: String!
+    building: String!
+    phone: String!
+  ): MutationResponse!
+  loginUser(user_id: String!, password: String!): Boolean!
+  # manage user
+  getAdmin(username: String!, password: String!): adminUserResponse!
+  # products
+  createProducts(
+    product_name: String!
+    description: String!
+    img: String!
+    unit_price: Int!
+    discount: Float!
+    stock: Int!
+    brand: Int!
+    category: Int!
+  ): MutationResponse!
+  getProduct(product_id: Int!): Product!
+  getAllProductsByCategory(
+    category: String!
+    first: Int!
+    skip: Int!
+  ): [Product!]!
+  getAllProductsByKeyword(
+    keyword: String!
+    sortBy: SortBy!
+    first: Int!
+    skip: Int!
+  ): [Product!]!
+  # cart
+  getCartItem(id: Int!): Product!
+  createCart(product_id: Int!): MutationResponse!
+  createAdminCart(user_id: Int!, product_id: Int!): MutationResponse!
+  deleteCart(id: Int!): MutationResponse!
+  # order
+  createOrder(
+    user_id: String!
+    product_id: Int!
+    quantity: Int!
+    postage: Int!
+    price: Int!
+    status: Boolean!
+  ): MutationResponse!
+  # category
+  createCategory(category: String!): MutationResponse!
+  createBrand(brand: String!): MutationResponse!
+  createAdminUser(username: String!, password: String!): MutationResponse!
+  createToken(user_id: String!): String!
+  createAdminToken(user_id: String!): String!
+}
+
+enum OrderBy {
+  createdAt_ASC
+  createdAt_DESC
+}
+
+enum SortBy {
+  ASC
+  DESC
+}
+
+type MutationResponse implements Node {
+  id: ID!
+  is_error: Boolean!
+  message: String!
+}
+
+type adminUser implements Node {
+  id: ID!
+  username: String!
+  password: String!
+}
+
+type adminUserResponse implements Node {
+  id: ID!
+  is_username: Boolean!
+  is_password: Boolean!
+}
+
+type User implements Node {
+  id: ID!
+  user_id: String!
+  password: String!
+  username: String!
+  email: String!
+  sex: String!
+  date_of_birth: String!
+  destination_family_name: String!
+  destination_first_name: String!
+  postcode: Int!
+  prefecture_code: String!
+  city: String!
+  street: String!
+  building: String!
+  phone: String!
+  created_at: Time!
+  updated_at: Time!
+}
+
+type AuthUser implements Node {
+  id: ID!
+  username: String!
+  sex: String!
+}
+
+type Address implements Node {
+  id: ID!
+  address_id: Int!
+  destination_family_name: String!
+  destination_first_name: String!
+  postcode: Int!
+  prefecture_code: String!
+  city: String!
+  street: String!
+  building: String!
+  phone: String!
+}
+
+type Product implements Node {
+  id: ID!
+  product_name: String!
+  description: String!
+  img: String!
+  unit_price: Int!
+  discount: Float!
+  stock: Int!
+  brand: Int!
+  category: String!
+  created_at: Time!
+  updated_at: Time!
+}
+
+type Product_cartId implements Node {
+  id: ID!
+  product_name: String!
+  description: String!
+  img: String!
+  unit_price: Int!
+  discount: Float!
+  stock: Int!
+  brand: Int!
+  category: String!
+  created_at: Time!
+  updated_at: Time!
+  cart_id: Int!
+}
+
+type Cart_item implements Node {
+  id: ID!
+  user_id: Int!
+  product_id: Int!
+}
+
+type Order implements Node {
+  id: ID!
+  user_id: String!
+  product_id: Int!
+  quantity: Int!
+  postage: Int!
+  price: Int!
+  status: Boolean!
+  created_at: Time!
+}
+
+type Media implements Node {
+  id: ID!
+  title: String!
+  contents: String!
+  img: String!
+  created_at: Time!
+  updated_at: Time!
+}
+
+enum Category {
+  fashion
+  lifeStyle
+  chair
+  interior
+  shoes
+}
+
+scalar Time
+scalar UUID
