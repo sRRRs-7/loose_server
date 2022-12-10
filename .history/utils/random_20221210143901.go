@@ -9,10 +9,10 @@ const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 func RandomString(n int) string {
 	var sb strings.Builder
-	sb.Grow(10)
+	sb.Grow(32)
 	l := len(alphabet)
 
-	for i := 0; i < n; i++ {
+	for i := 0; i <= n; i++ {
 		c := alphabet[rand.Intn(l)]
 		sb.WriteByte(c)
 	}

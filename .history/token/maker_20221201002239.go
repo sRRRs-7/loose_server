@@ -2,6 +2,7 @@ package token
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,11 +16,12 @@ type Maker interface {
 	VerifyToken(token string) (*Payload, error)
 }
 
+
 // Payload contains the payload data of the token
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
 	UserID    string    `json:"token"`
-	Subject   string    `json:"subject"` // use function
+	Subject   string    `json:"subject"`	// use function
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
@@ -31,7 +33,7 @@ func NewPayload(userID string, duration time.Duration) (*Payload, error) {
 		return nil, err
 	}
 
-	payload := &Payload{
+	payload := &Payload {
 		ID:        userUID,
 		UserID:    userID,
 		Subject:   "API",
@@ -44,6 +46,7 @@ func NewPayload(userID string, duration time.Duration) (*Payload, error) {
 
 // Valid checks if the token is valid or not
 func (payload *Payload) ValidToken() error {
+	fmt.Println(payload.ExpiredAt)
 	if time.Now().After(payload.ExpiredAt) {
 		return ErrExpiredToken
 	}
@@ -52,10 +55,10 @@ func (payload *Payload) ValidToken() error {
 
 // marshal for redis
 func (payload *Payload) MarshalBinary() ([]byte, error) {
-	return json.Marshal(payload)
+    return json.Marshal(payload)
 }
 
 // unmarshal for redis
 func (payload *Payload) UnmarshalBinary(data []byte) error {
-	return json.Unmarshal(data, &payload)
+    return json.Unmarshal(data, &payload)
 }

@@ -12,7 +12,7 @@ func RandomString(n int) string {
 	sb.Grow(10)
 	l := len(alphabet)
 
-	for i := 0; i < n; i++ {
+	for i := 0; i <= n; i++ {
 		c := alphabet[rand.Intn(l)]
 		sb.WriteByte(c)
 	}
