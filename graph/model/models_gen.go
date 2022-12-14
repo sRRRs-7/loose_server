@@ -13,36 +13,46 @@ type Node interface {
 	IsNode()
 }
 
-type Address struct {
-	ID                    string `json:"id"`
-	AddressID             int    `json:"address_id"`
-	DestinationFamilyName string `json:"destination_family_name"`
-	DestinationFirstName  string `json:"destination_first_name"`
-	Postcode              int    `json:"postcode"`
-	PrefectureCode        string `json:"prefecture_code"`
-	City                  string `json:"city"`
-	Street                string `json:"street"`
-	Building              string `json:"building"`
-	Phone                 string `json:"phone"`
+type Code struct {
+	ID          string    `json:"id"`
+	Username    string    `json:"username"`
+	Code        string    `json:"code"`
+	Img         string    `json:"img"`
+	Description string    `json:"description"`
+	Performance string    `json:"performance"`
+	Star        int       `json:"star"`
+	Tags        []string  `json:"tags"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Access      int       `json:"access"`
 }
 
-func (Address) IsNode() {}
+func (Code) IsNode() {}
 
-type AuthUser struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Sex      string `json:"sex"`
+type CodeWithCollectionID struct {
+	ID           string    `json:"id"`
+	Username     string    `json:"username"`
+	Code         string    `json:"code"`
+	Img          string    `json:"img"`
+	Description  string    `json:"description"`
+	Performance  string    `json:"performance"`
+	Star         int       `json:"star"`
+	Tags         []string  `json:"tags"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	Access       int       `json:"access"`
+	CollectionID int       `json:"collection_id"`
 }
 
-func (AuthUser) IsNode() {}
+func (CodeWithCollectionID) IsNode() {}
 
-type CartItem struct {
-	ID        string `json:"id"`
-	UserID    int    `json:"user_id"`
-	ProductID int    `json:"product_id"`
+type Collection struct {
+	ID     string `json:"id"`
+	UserID int    `json:"user_id"`
+	CodeID int    `json:"code_id"`
 }
 
-func (CartItem) IsNode() {}
+func (Collection) IsNode() {}
 
 type Media struct {
 	ID        string    `json:"id"`
@@ -63,82 +73,23 @@ type MutationResponse struct {
 
 func (MutationResponse) IsNode() {}
 
-type Order struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"user_id"`
-	ProductID int       `json:"product_id"`
-	Quantity  int       `json:"quantity"`
-	Postage   int       `json:"postage"`
-	Price     int       `json:"price"`
-	Status    bool      `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
+type Star struct {
+	ID      string `json:"id"`
+	UserID  int    `json:"user_id"`
+	CodesID int    `json:"codes_id"`
 }
 
-func (Order) IsNode() {}
-
-type Post struct {
-	ID        string `json:"id"`
-	Title     string `json:"title"`
-	Votes     int    `json:"votes"`
-	URL       string `json:"url"`
-	CreatedAt string `json:"createdAt"`
-}
-
-type PostsMeta struct {
-	Count int `json:"count"`
-}
-
-type Product struct {
-	ID          string    `json:"id"`
-	ProductName string    `json:"product_name"`
-	Description string    `json:"description"`
-	Img         string    `json:"img"`
-	UnitPrice   int       `json:"unit_price"`
-	Discount    float64   `json:"discount"`
-	Stock       int       `json:"stock"`
-	Brand       int       `json:"brand"`
-	Category    string    `json:"category"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-func (Product) IsNode() {}
-
-type ProductCartID struct {
-	ID          string    `json:"id"`
-	ProductName string    `json:"product_name"`
-	Description string    `json:"description"`
-	Img         string    `json:"img"`
-	UnitPrice   int       `json:"unit_price"`
-	Discount    float64   `json:"discount"`
-	Stock       int       `json:"stock"`
-	Brand       int       `json:"brand"`
-	Category    string    `json:"category"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	CartID      int       `json:"cart_id"`
-}
-
-func (ProductCartID) IsNode() {}
+func (Star) IsNode() {}
 
 type User struct {
-	ID                    string    `json:"id"`
-	UserID                string    `json:"user_id"`
-	Password              string    `json:"password"`
-	Username              string    `json:"username"`
-	Email                 string    `json:"email"`
-	Sex                   string    `json:"sex"`
-	DateOfBirth           string    `json:"date_of_birth"`
-	DestinationFamilyName string    `json:"destination_family_name"`
-	DestinationFirstName  string    `json:"destination_first_name"`
-	Postcode              int       `json:"postcode"`
-	PrefectureCode        string    `json:"prefecture_code"`
-	City                  string    `json:"city"`
-	Street                string    `json:"street"`
-	Building              string    `json:"building"`
-	Phone                 string    `json:"phone"`
-	CreatedAt             time.Time `json:"created_at"`
-	UpdatedAt             time.Time `json:"updated_at"`
+	ID          string    `json:"id"`
+	Username    string    `json:"username"`
+	Password    string    `json:"password"`
+	Email       string    `json:"email"`
+	Sex         string    `json:"sex"`
+	DateOfBirth string    `json:"date_of_birth"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 func (User) IsNode() {}
@@ -158,94 +109,6 @@ type AdminUserResponse struct {
 }
 
 func (AdminUserResponse) IsNode() {}
-
-type Category string
-
-const (
-	CategoryFashion   Category = "fashion"
-	CategoryLifeStyle Category = "lifeStyle"
-	CategoryChair     Category = "chair"
-	CategoryInterior  Category = "interior"
-	CategoryShoes     Category = "shoes"
-)
-
-var AllCategory = []Category{
-	CategoryFashion,
-	CategoryLifeStyle,
-	CategoryChair,
-	CategoryInterior,
-	CategoryShoes,
-}
-
-func (e Category) IsValid() bool {
-	switch e {
-	case CategoryFashion, CategoryLifeStyle, CategoryChair, CategoryInterior, CategoryShoes:
-		return true
-	}
-	return false
-}
-
-func (e Category) String() string {
-	return string(e)
-}
-
-func (e *Category) UnmarshalGQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = Category(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid Category", str)
-	}
-	return nil
-}
-
-func (e Category) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-type OrderBy string
-
-const (
-	OrderByCreatedAtAsc  OrderBy = "createdAt_ASC"
-	OrderByCreatedAtDesc OrderBy = "createdAt_DESC"
-)
-
-var AllOrderBy = []OrderBy{
-	OrderByCreatedAtAsc,
-	OrderByCreatedAtDesc,
-}
-
-func (e OrderBy) IsValid() bool {
-	switch e {
-	case OrderByCreatedAtAsc, OrderByCreatedAtDesc:
-		return true
-	}
-	return false
-}
-
-func (e OrderBy) String() string {
-	return string(e)
-}
-
-func (e *OrderBy) UnmarshalGQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderBy(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderBy", str)
-	}
-	return nil
-}
-
-func (e OrderBy) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
 
 type SortBy string
 

@@ -10,12 +10,12 @@ import (
 	"time"
 )
 
-const createAdminUser = `-- name: CreateAdminUser :one
+const createAdminUser = `-- name: CreateAdminUser :exec
 INSERT INTO adminuser(
     username, password, created_at
 ) VALUES (
     $1, $2, $3
-) RETURNING id, username, password, created_at
+)
 `
 
 type CreateAdminUserParams struct {
@@ -24,20 +24,14 @@ type CreateAdminUserParams struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func (q *Queries) CreateAdminUser(ctx context.Context, arg CreateAdminUserParams) (*Adminuser, error) {
-	row := q.db.QueryRow(ctx, createAdminUser, arg.Username, arg.Password, arg.CreatedAt)
-	var i Adminuser
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.Password,
-		&i.CreatedAt,
-	)
-	return &i, err
+func (q *Queries) CreateAdminUser(ctx context.Context, arg CreateAdminUserParams) error {
+	_, err := q.db.Exec(ctx, createAdminUser, arg.Username, arg.Password, arg.CreatedAt)
+	return err
 }
 
 const getAdminUser = `-- name: GetAdminUser :one
-SELECT id, username, password, created_at FROM adminuser WHERE username = $1 AND password = $2
+SELECT id, username, password, created_at FROM adminuser
+WHERE username = $1 AND password = $2
 `
 
 type GetAdminUserParams struct {

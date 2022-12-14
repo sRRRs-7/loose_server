@@ -5,7 +5,6 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -16,72 +15,48 @@ type Adminuser struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type Brands struct {
-	ID        int64  `json:"id"`
-	BrandName string `json:"brand_name"`
+type Codes struct {
+	ID          int64     `json:"id"`
+	Username    string    `json:"username"`
+	Code        string    `json:"code"`
+	Img         []byte    `json:"img"`
+	Description string    `json:"description"`
+	Performance string    `json:"performance"`
+	Star        int64     `json:"star"`
+	Tags        []string  `json:"tags"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Access      int64     `json:"access"`
 }
 
-type Carts struct {
-	ID        int64 `json:"id"`
-	UserID    int64 `json:"user_id"`
-	ProductID int64 `json:"product_id"`
-}
-
-type Categories struct {
-	ID       int64  `json:"id"`
-	Category string `json:"category"`
+type Collection struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+	CodeID int64 `json:"code_id"`
 }
 
 type Media struct {
 	ID        int64     `json:"id"`
 	Title     string    `json:"title"`
 	Contents  string    `json:"contents"`
-	Img       string    `json:"img"`
+	Img       []byte    `json:"img"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type Orders struct {
-	ID        int64     `json:"id"`
-	UserID    string    `json:"user_id"`
-	ProductID int64     `json:"product_id"`
-	Quantity  int32     `json:"quantity"`
-	Postage   int32     `json:"postage"`
-	Price     int32     `json:"price"`
-	Status    bool      `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-type Products struct {
-	ID          int64          `json:"id"`
-	ProductName string         `json:"product_name"`
-	Description sql.NullString `json:"description"`
-	Img         sql.NullString `json:"img"`
-	UnitPrice   int32          `json:"unit_price"`
-	Discount    float64        `json:"discount"`
-	Stock       int32          `json:"stock"`
-	BrandID     int64          `json:"brand_id"`
-	Category    int64          `json:"category"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
+type Stars struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+	CodeID int64 `json:"code_id"`
 }
 
 type Users struct {
-	ID                    int64     `json:"id"`
-	UserID                string    `json:"user_id"`
-	Password              string    `json:"password"`
-	Username              string    `json:"username"`
-	Email                 string    `json:"email"`
-	Sex                   string    `json:"sex"`
-	DataOfBirth           string    `json:"data_of_birth"`
-	DestinationFamilyName string    `json:"destination_family_name"`
-	DestinationFirstName  string    `json:"destination_first_name"`
-	Postcode              int32     `json:"postcode"`
-	PrefectureCode        string    `json:"prefecture_code"`
-	City                  string    `json:"city"`
-	Street                string    `json:"street"`
-	Building              string    `json:"building"`
-	Phone                 string    `json:"phone"`
-	CreatedAt             time.Time `json:"created_at"`
-	UpdatedAt             time.Time `json:"updated_at"`
+	ID          int64     `json:"id"`
+	Username    string    `json:"username"`
+	Password    string    `json:"password"`
+	Email       string    `json:"email"`
+	Sex         string    `json:"sex"`
+	DataOfBirth string    `json:"data_of_birth"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }

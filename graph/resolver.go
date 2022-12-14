@@ -8,8 +8,8 @@ import (
 )
 
 type Resolver struct {
-	store db.Store
-	tokenMaker token.Maker
-	config cfg.Config
+	store       db.Store
+	tokenMaker  token.Maker
+	config      cfg.Config
 	dataloaders dataloaders.Retriever
 }

@@ -9,39 +9,34 @@ import (
 )
 
 type Querier interface {
-	CreateAdminUser(ctx context.Context, arg CreateAdminUserParams) (*Adminuser, error)
-	CreateBrand(ctx context.Context, brandName string) (*Brands, error)
-	CreateCartItem(ctx context.Context, arg CreateCartItemParams) (*Carts, error)
-	CreateCategory(ctx context.Context, category string) (*Categories, error)
-	CreateMedia(ctx context.Context, arg CreateMediaParams) (*Media, error)
-	CreateOrder(ctx context.Context, arg CreateOrderParams) (*Orders, error)
-	CreateProduct(ctx context.Context, arg CreateProductParams) error
-	CreateUser(ctx context.Context, arg CreateUserParams) (*Users, error)
-	DeleteCartItem(ctx context.Context, id int64) error
+	CountStar(ctx context.Context, codeID int64) (int64, error)
+	CreateAdminUser(ctx context.Context, arg CreateAdminUserParams) error
+	CreateCode(ctx context.Context, arg CreateCodeParams) error
+	CreateCollection(ctx context.Context, arg CreateCollectionParams) error
+	CreateMedia(ctx context.Context, arg CreateMediaParams) error
+	CreateStar(ctx context.Context, arg CreateStarParams) error
+	CreateUser(ctx context.Context, arg CreateUserParams) error
+	DeleteCode(ctx context.Context, id int64) error
+	DeleteCollection(ctx context.Context, id int64) error
 	DeleteMedia(ctx context.Context, id int64) error
-	DeleteOrder(ctx context.Context, id int64) error
-	DeleteProduct(ctx context.Context, id int64) error
-	DeleteUser(ctx context.Context, userID string) error
+	DeleteStar(ctx context.Context, arg DeleteStarParams) error
+	DeleteUser(ctx context.Context, id int64) error
 	GetAdminUser(ctx context.Context, arg GetAdminUserParams) (*Adminuser, error)
-	GetAllCartItem(ctx context.Context, arg GetAllCartItemParams) ([]*GetAllCartItemRow, error)
-	GetCategories(ctx context.Context, category string) (*Categories, error)
+	GetAllCodes(ctx context.Context, arg GetAllCodesParams) ([]*Codes, error)
+	GetAllCodesByKeyword(ctx context.Context, arg GetAllCodesByKeywordParams) ([]*Codes, error)
+	GetAllCodesByTag(ctx context.Context, arg GetAllCodesByTagParams) ([]*Codes, error)
+	GetAllCodesSortedAccess(ctx context.Context, arg GetAllCodesSortedAccessParams) ([]*Codes, error)
+	GetAllCodesSortedStar(ctx context.Context, arg GetAllCodesSortedStarParams) ([]*Codes, error)
+	GetCode(ctx context.Context, id int64) (*Codes, error)
+	GetCollection(ctx context.Context, id int64) (*Codes, error)
 	GetMedia(ctx context.Context, id int64) (*Media, error)
-	GetOrder(ctx context.Context, arg GetOrderParams) (*Orders, error)
-	GetProduct(ctx context.Context, id int64) (*Products, error)
-	GetUser(ctx context.Context, userID string) (int64, error)
-	ListCategories(ctx context.Context, arg ListCategoriesParams) ([]*Categories, error)
+	GetUser(ctx context.Context, username string) (int64, error)
+	ListCollections(ctx context.Context, arg ListCollectionsParams) ([]*ListCollectionsRow, error)
 	ListMedia(ctx context.Context, arg ListMediaParams) ([]*Media, error)
-	ListOrders(ctx context.Context, userID string) ([]*Orders, error)
-	ListProduct(ctx context.Context, arg ListProductParams) ([]*Products, error)
-	ListProductByCategory(ctx context.Context, arg ListProductByCategoryParams) ([]*Products, error)
-	ListProductByKeyword(ctx context.Context, arg ListProductByKeywordParams) ([]*Products, error)
-	ListUsers(ctx context.Context, arg ListUsersParams) ([]*Users, error)
-	Listbrands(ctx context.Context) ([]*Brands, error)
 	LoginUser(ctx context.Context, arg LoginUserParams) (*Users, error)
+	UpdateAccess(ctx context.Context, arg UpdateAccessParams) error
+	UpdateCode(ctx context.Context, arg UpdateCodeParams) error
 	UpdateMedia(ctx context.Context, arg UpdateMediaParams) error
-	UpdateOrderQuantity(ctx context.Context, arg UpdateOrderQuantityParams) error
-	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error
-	UpdateProductStock(ctx context.Context, arg UpdateProductStockParams) (*Products, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }
 

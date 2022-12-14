@@ -11,42 +11,36 @@ import (
 )
 
 func (r *mutationResolver) CreateAdminUserResolver(ctx context.Context, username string, password string) (*model.MutationResponse, error) {
+	gc, err := GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	hashPassword, err := cryptography.HashPassword(password)
+	if err != nil {
+		return nil, fmt.Errorf("admin user password encrypt error: %v", err)
+	}
+
+	args := db.CreateAdminUserParams{
+		Username:  username,
+		Password:  hashPassword,
+		CreatedAt: time.Now(),
+	}
+
+	err = r.store.CreateAdminUser(gc, args)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create admin user: %v", err)
+	}
+
 	res := &model.MutationResponse{
 		IsError: false,
 		Message: "create a admin user OK",
 	}
 
-	gc, err := GinContextFromContext(ctx)
-	if err != nil {
-		res.IsError = true
-		res.Message = "error"
-		return res, fmt.Errorf("gin context convert error: %v", err)
-	}
-
-	hashPassword, err := cryptography.HashPassword(password)
-	if err != nil {
-		return res, fmt.Errorf("admin user password encrypt error: %v", err)
-	}
-
-	args := db.CreateAdminUserParams{
-		Username: username,
-		Password: hashPassword,
-		CreatedAt: time.Now(),
-	}
-
-	admin, err := r.store.CreateAdminUser(gc, args)
-	if err != nil {
-		res.IsError = true
-		res.Message = "error"
-		return res, fmt.Errorf("failed to create admin user: %v", err)
-	}
-
-	fmt.Println(admin)
 	return res, nil
 }
 
-
-func (r *mutationResolver) GetAdminResolver(ctx context.Context, username string, password string) (*model.AdminUserResponse, error) {
+func (r *mutationResolver) GetAdminUserResolver(ctx context.Context, username string, password string) (*model.AdminUserResponse, error) {
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
@@ -72,8 +66,8 @@ func (r *mutationResolver) GetAdminResolver(ctx context.Context, username string
 		return nil, fmt.Errorf("admin user verify password error: %v", err)
 	}
 
-	admin := &model.AdminUserResponse {
-		ID: fmt.Sprint(user.ID),
+	admin := &model.AdminUserResponse{
+		ID:         fmt.Sprint(user.ID),
 		IsUsername: user.Username == username,
 		IsPassword: b,
 	}

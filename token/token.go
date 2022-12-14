@@ -14,10 +14,8 @@ type PasetoMaker struct {
 	symmetricKey []byte
 }
 
-
 var ErrInvalidToken = errors.New("token is invalid")
 var ErrExpiredToken = errors.New("token has expired")
-
 
 func NewPasetoMaker(symmetricKey string) (Maker, error) {
 	if len(symmetricKey) != chacha20poly1305.KeySize {
@@ -32,8 +30,8 @@ func NewPasetoMaker(symmetricKey string) (Maker, error) {
 }
 
 // CreateToken creates a new token for a specific username and duration
-func (pasetoMaker *PasetoMaker) CreateToken(userID string, duration time.Duration) (string, *Payload, error) {
-	payload, err := NewPayload(userID, duration)
+func (pasetoMaker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, *Payload, error) {
+	payload, err := NewPayload(username, duration)
 	if err != nil {
 		return "", payload, err
 	}

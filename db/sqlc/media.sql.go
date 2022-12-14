@@ -10,40 +10,31 @@ import (
 	"time"
 )
 
-const createMedia = `-- name: CreateMedia :one
+const createMedia = `-- name: CreateMedia :exec
 INSERT INTO media (
     title, contents, img, created_at, updated_at
 ) VALUES (
     $1, $2, $3, $4, $5
-) RETURNING id, title, contents, img, created_at, updated_at
+)
 `
 
 type CreateMediaParams struct {
 	Title     string    `json:"title"`
 	Contents  string    `json:"contents"`
-	Img       string    `json:"img"`
+	Img       []byte    `json:"img"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) (*Media, error) {
-	row := q.db.QueryRow(ctx, createMedia,
+func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) error {
+	_, err := q.db.Exec(ctx, createMedia,
 		arg.Title,
 		arg.Contents,
 		arg.Img,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
-	var i Media
-	err := row.Scan(
-		&i.ID,
-		&i.Title,
-		&i.Contents,
-		&i.Img,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return &i, err
+	return err
 }
 
 const deleteMedia = `-- name: DeleteMedia :exec
@@ -58,7 +49,7 @@ func (q *Queries) DeleteMedia(ctx context.Context, id int64) error {
 
 const getMedia = `-- name: GetMedia :one
 SELECT id, title, contents, img, created_at, updated_at FROM media
-WHERE id = $1 LIMIT 1
+WHERE id = $1
 `
 
 func (q *Queries) GetMedia(ctx context.Context, id int64) (*Media, error) {
@@ -120,14 +111,13 @@ SET title = $2,
     contents = $3,
     img = $4
 WHERE id = $1
-RETURNING id, title, contents, img, created_at, updated_at
 `
 
 type UpdateMediaParams struct {
 	ID       int64  `json:"id"`
 	Title    string `json:"title"`
 	Contents string `json:"contents"`
-	Img      string `json:"img"`
+	Img      []byte `json:"img"`
 }
 
 func (q *Queries) UpdateMedia(ctx context.Context, arg UpdateMediaParams) error {

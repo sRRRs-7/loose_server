@@ -10,191 +10,85 @@ import (
 	"time"
 )
 
-const createUser = `-- name: CreateUser :one
+const createUser = `-- name: CreateUser :exec
 INSERT INTO users (
-    user_id,
-    password,
     username,
+    password,
     email,
     sex,
     data_of_birth,
-    destination_family_name,
-    destination_first_name,
-    postcode,
-    prefecture_code,
-    city,
-    street,
-    building,
-    phone,
     created_at,
     updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
-) RETURNING id, user_id, password, username, email, sex, data_of_birth, destination_family_name, destination_first_name, postcode, prefecture_code, city, street, building, phone, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7
+)
 `
 
 type CreateUserParams struct {
-	UserID                string    `json:"user_id"`
-	Password              string    `json:"password"`
-	Username              string    `json:"username"`
-	Email                 string    `json:"email"`
-	Sex                   string    `json:"sex"`
-	DataOfBirth           string    `json:"data_of_birth"`
-	DestinationFamilyName string    `json:"destination_family_name"`
-	DestinationFirstName  string    `json:"destination_first_name"`
-	Postcode              int32     `json:"postcode"`
-	PrefectureCode        string    `json:"prefecture_code"`
-	City                  string    `json:"city"`
-	Street                string    `json:"street"`
-	Building              string    `json:"building"`
-	Phone                 string    `json:"phone"`
-	CreatedAt             time.Time `json:"created_at"`
-	UpdatedAt             time.Time `json:"updated_at"`
+	Username    string    `json:"username"`
+	Password    string    `json:"password"`
+	Email       string    `json:"email"`
+	Sex         string    `json:"sex"`
+	DataOfBirth string    `json:"data_of_birth"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*Users, error) {
-	row := q.db.QueryRow(ctx, createUser,
-		arg.UserID,
-		arg.Password,
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+	_, err := q.db.Exec(ctx, createUser,
 		arg.Username,
+		arg.Password,
 		arg.Email,
 		arg.Sex,
 		arg.DataOfBirth,
-		arg.DestinationFamilyName,
-		arg.DestinationFirstName,
-		arg.Postcode,
-		arg.PrefectureCode,
-		arg.City,
-		arg.Street,
-		arg.Building,
-		arg.Phone,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
-	var i Users
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Password,
-		&i.Username,
-		&i.Email,
-		&i.Sex,
-		&i.DataOfBirth,
-		&i.DestinationFamilyName,
-		&i.DestinationFirstName,
-		&i.Postcode,
-		&i.PrefectureCode,
-		&i.City,
-		&i.Street,
-		&i.Building,
-		&i.Phone,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return &i, err
+	return err
 }
 
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users
-WHERE user_id = $1
+WHERE id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, userID string) error {
-	_, err := q.db.Exec(ctx, deleteUser, userID)
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
 }
 
 const getUser = `-- name: GetUser :one
 SELECT id FROM users
-WHERE user_id = $1
+WHERE username = $1
 `
 
-func (q *Queries) GetUser(ctx context.Context, userID string) (int64, error) {
-	row := q.db.QueryRow(ctx, getUser, userID)
+func (q *Queries) GetUser(ctx context.Context, username string) (int64, error) {
+	row := q.db.QueryRow(ctx, getUser, username)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
 
-const listUsers = `-- name: ListUsers :many
-SELECT id, user_id, password, username, email, sex, data_of_birth, destination_family_name, destination_first_name, postcode, prefecture_code, city, street, building, phone, created_at, updated_at FROM users
-ORDER BY user_id
-LIMIT $1
-OFFSET $2
-`
-
-type ListUsersParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]*Users, error) {
-	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []*Users{}
-	for rows.Next() {
-		var i Users
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Password,
-			&i.Username,
-			&i.Email,
-			&i.Sex,
-			&i.DataOfBirth,
-			&i.DestinationFamilyName,
-			&i.DestinationFirstName,
-			&i.Postcode,
-			&i.PrefectureCode,
-			&i.City,
-			&i.Street,
-			&i.Building,
-			&i.Phone,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const loginUser = `-- name: LoginUser :one
-SELECT id, user_id, password, username, email, sex, data_of_birth, destination_family_name, destination_first_name, postcode, prefecture_code, city, street, building, phone, created_at, updated_at FROM users
-WHERE user_id = $1 AND password = $2
+SELECT id, username, password, email, sex, data_of_birth, created_at, updated_at FROM users
+WHERE username = $1 AND password = $2
 `
 
 type LoginUserParams struct {
-	UserID   string `json:"user_id"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
 func (q *Queries) LoginUser(ctx context.Context, arg LoginUserParams) (*Users, error) {
-	row := q.db.QueryRow(ctx, loginUser, arg.UserID, arg.Password)
+	row := q.db.QueryRow(ctx, loginUser, arg.Username, arg.Password)
 	var i Users
 	err := row.Scan(
 		&i.ID,
-		&i.UserID,
-		&i.Password,
 		&i.Username,
+		&i.Password,
 		&i.Email,
 		&i.Sex,
 		&i.DataOfBirth,
-		&i.DestinationFamilyName,
-		&i.DestinationFirstName,
-		&i.Postcode,
-		&i.PrefectureCode,
-		&i.City,
-		&i.Street,
-		&i.Building,
-		&i.Phone,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -206,21 +100,20 @@ UPDATE users
 SET username = $2,
     email = $3,
     updated_at = $4
-WHERE user_id = $1
-RETURNING id, user_id, password, username, email, sex, data_of_birth, destination_family_name, destination_first_name, postcode, prefecture_code, city, street, building, phone, created_at, updated_at
+WHERE username = $1
 `
 
 type UpdateUserParams struct {
-	UserID    string    `json:"user_id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Username   string    `json:"username"`
+	Username_2 string    `json:"username_2"`
+	Email      string    `json:"email"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.db.Exec(ctx, updateUser,
-		arg.UserID,
 		arg.Username,
+		arg.Username_2,
 		arg.Email,
 		arg.UpdatedAt,
 	)

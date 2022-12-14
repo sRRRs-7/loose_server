@@ -18,14 +18,14 @@ type Maker interface {
 // Payload contains the payload data of the token
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
-	UserID    string    `json:"token"`
-	Subject   string    `json:"subject"` // use function
+	Username  string    `json:"token"`
+	Subject   string    `json:"subject"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
 // NewPayload creates a new token payload with a specific username and duration
-func NewPayload(userID string, duration time.Duration) (*Payload, error) {
+func NewPayload(username string, duration time.Duration) (*Payload, error) {
 	userUID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func NewPayload(userID string, duration time.Duration) (*Payload, error) {
 
 	payload := &Payload{
 		ID:        userUID,
-		UserID:    userID,
+		Username:  username,
 		Subject:   "API",
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
