@@ -37,6 +37,7 @@ type Querier interface {
 	UpdateAccess(ctx context.Context, arg UpdateAccessParams) error
 	UpdateCode(ctx context.Context, arg UpdateCodeParams) error
 	UpdateMedia(ctx context.Context, arg UpdateMediaParams) error
+	UpdateStar(ctx context.Context, arg UpdateStarParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }
 

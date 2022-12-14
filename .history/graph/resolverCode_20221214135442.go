@@ -341,11 +341,6 @@ func (r *queryResolver) GetAllCodesSortedAccessResolver(ctx context.Context, lim
 
 	list := make([]*model.Code, len(codes))
 	for i, c := range codes {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(c.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
 		list[i] = &model.Code{
 			ID:          string(fmt.Sprint(c.ID)),
 			Username:    c.Username,

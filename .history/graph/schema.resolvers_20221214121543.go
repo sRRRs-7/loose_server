@@ -235,27 +235,21 @@ func (r *queryResolver) GetAllCodes(ctx context.Context, limit int, skip int) ([
 }
 
 func (r *queryResolver) GetAllCodesByKeyword(ctx context.Context, keyword string, limit int, skip int) ([]*model.Code, error) {
-	res, err := r.GetAllCodesByKeywordResolver(ctx, keyword, limit, skip)
-	if err != nil {
-		return nil, fmt.Errorf("GetAllCodesByKeyword error: %v", err)
+	func (r *queryResolver) GetAllCodesByKeyword(ctx context.Context, keyword string, limit int, skip int) ([]*model.Code, error) {
+		res, err := r.GetAllCodesByKeywordResolver(ctx, keyword, limit, skip)
+		if err != nil {
+			return nil, fmt.Errorf("GetAllCodesByKeyword error: %v", err)
+		}
+		return res, nil
 	}
-	return res, nil
 }
 
 func (r *queryResolver) GetAllCodesSortedStar(ctx context.Context, limit int, skip int) ([]*model.Code, error) {
-	res, err := r.GetAllCodesSortedStarResolver(ctx, limit, skip)
-	if err != nil {
-		return nil, fmt.Errorf("GetAllCodesSortedStar error: %v", err)
-	}
-	return res, nil
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) GetAllCodesSortedAccess(ctx context.Context, limit int, skip int) ([]*model.Code, error) {
-	res, err := r.GetAllCodesSortedAccessResolver(ctx, limit, skip)
-	if err != nil {
-		return nil, fmt.Errorf("GetAllCodesSortedAccess error: %v", err)
-	}
-	return res, nil
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) GetAllCodesByTag(ctx context.Context, tags []*string, sortBy model.SortBy, limit int, skip int) ([]*model.Code, error) {
@@ -290,3 +284,26 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+
+
+func (r *queryResolver) GetAllCodesSortedStar(ctx context.Context, limit int, skip int) ([]*model.Code, error) {
+	res, err := r.GetAllCodesSortedStarResolver(ctx, limit, skip)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllCodesSortedStar error: %v", err)
+	}
+	return res, nil
+}
+func (r *queryResolver) GetAllCodesSortedAccess(ctx context.Context, limit int, skip int) ([]*model.Code, error) {
+	res, err := r.GetAllCodesSortedAccessResolver(ctx, limit, skip)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllCodesSortedAccess error: %v", err)
+	}
+	return res, nil
+}

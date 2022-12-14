@@ -19,7 +19,7 @@ OFFSET $2;
 SELECT * FROM codes
 WHERE
     $1 = ANY(tags) OR
-    $2 = ANY(tags) AND
+    $2 = ANY(tags) OR
     $3 = ANY(tags) AND
     $4 = ANY(tags) AND
     $5 = ANY(tags) AND

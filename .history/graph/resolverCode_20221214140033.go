@@ -298,6 +298,8 @@ func (r *queryResolver) GetAllCodesSortedStarResolver(ctx context.Context, limit
 		return nil, fmt.Errorf("GetAllCodesSortedStarResolver failed : %v", err)
 	}
 
+	fmt.Println(codes)
+
 	list := make([]*model.Code, len(codes))
 	for i, c := range codes {
 		// get star count

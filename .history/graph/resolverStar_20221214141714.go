@@ -66,7 +66,7 @@ func (r *mutationResolver) CreateStarResolver(ctx context.Context, codeID int) (
 	}
 	err = r.store.UpdateStar(gc, args2)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update star in a code : %v", err)
+		return nil, fmt.Errorf("failed to update star in code : %v", err)
 	}
 
 	res := &model.MutationResponse{
@@ -93,23 +93,9 @@ func (r *mutationResolver) CreateAdminStarResolver(ctx context.Context, userID, 
 		return nil, fmt.Errorf("failed to remove star: %v", err)
 	}
 
-	star, err := r.store.CountStar(gc, int64(codeID))
-	if err != nil {
-		return nil, fmt.Errorf("failed to count star: %v", err)
-	}
-
-	args2 := db.UpdateStarParams{
-		ID:   int64(codeID),
-		Star: star + 1,
-	}
-	err = r.store.UpdateStar(gc, args2)
-	if err != nil {
-		return nil, fmt.Errorf("failed to update star in a code : %v", err)
-	}
-
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "create a star OK",
+		Message: "delete a star OK",
 	}
 
 	return res, nil

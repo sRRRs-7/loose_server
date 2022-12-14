@@ -162,7 +162,7 @@ const getAllCodesByTag = `-- name: GetAllCodesByTag :many
 SELECT id, username, code, img, description, performance, star, tags, created_at, updated_at, access FROM codes
 WHERE
     $1 = ANY(tags) OR
-    $2 = ANY(tags) OR
+    $2 = ANY(tags) AND
     $3 = ANY(tags) AND
     $4 = ANY(tags) AND
     $5 = ANY(tags) AND
@@ -238,7 +238,7 @@ func (q *Queries) GetAllCodesByTag(ctx context.Context, arg GetAllCodesByTagPara
 
 const getAllCodesSortedAccess = `-- name: GetAllCodesSortedAccess :many
 SELECT id, username, code, img, description, performance, star, tags, created_at, updated_at, access FROM codes
-ORDER BY access ASC
+ORDER BY access DESC
 LIMIT $1
 OFFSET $2
 `
@@ -281,8 +281,8 @@ func (q *Queries) GetAllCodesSortedAccess(ctx context.Context, arg GetAllCodesSo
 }
 
 const getAllCodesSortedStar = `-- name: GetAllCodesSortedStar :many
-SELECT id, username, code, img, description, performance, star, tags, created_at, updated_at, access FROM codes
-ORDER BY star ASC
+SELECT c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access FROM codes AS c
+ORDER BY star DESC
 LIMIT $1
 OFFSET $2
 `
@@ -395,5 +395,21 @@ func (q *Queries) UpdateCode(ctx context.Context, arg UpdateCodeParams) error {
 		arg.Tags,
 		arg.UpdatedAt,
 	)
+	return err
+}
+
+const updateStar = `-- name: UpdateStar :exec
+UPDATE codes
+SET star = $2
+WHERE id = $1
+`
+
+type UpdateStarParams struct {
+	ID   int64 `json:"id"`
+	Star int64 `json:"star"`
+}
+
+func (q *Queries) UpdateStar(ctx context.Context, arg UpdateStarParams) error {
+	_, err := q.db.Exec(ctx, updateStar, arg.ID, arg.Star)
 	return err
 }

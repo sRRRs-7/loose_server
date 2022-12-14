@@ -19,7 +19,7 @@ OFFSET $2;
 SELECT * FROM codes
 WHERE
     $1 = ANY(tags) OR
-    $2 = ANY(tags) AND
+    $2 = ANY(tags) OR
     $3 = ANY(tags) AND
     $4 = ANY(tags) AND
     $5 = ANY(tags) AND
@@ -67,11 +67,6 @@ WHERE id = $1;
 -- name: UpdateAccess :exec
 UPDATE codes
 SET access = $2
-WHERE id = $1;
-
--- name: UpdateStar :exec
-UPDATE codes
-SET star = $2
 WHERE id = $1;
 
 -- name: DeleteCode :exec

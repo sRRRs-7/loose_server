@@ -59,6 +59,174 @@ func (r *mutationResolver) CreateCodeResolver(ctx context.Context, username stri
 	return res, nil
 }
 
+func (r *mutationResolver) GetAllCodesByTagResolver(ctx context.Context, tags []*string, sortBy model.SortBy, limit int, skip int) ([]*model.Code, error) {
+	gc, err := GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	t := make([]string, 10)
+	for i, tag := range tags {
+		t[i] = strings.ToLower(*tag)
+	}
+
+	args := db.GetAllCodesByTagParams{
+		Column1:  t[0],
+		Column2:  t[1],
+		Column3:  t[2],
+		Column4:  t[3],
+		Column5:  t[4],
+		Column6:  t[5],
+		Column7:  t[6],
+		Column8:  t[7],
+		Column9:  t[8],
+		Column10: t[9],
+		Limit:    int32(limit),
+		Offset:   int32(skip),
+	}
+
+	codes, err := r.store.GetAllCodesByTag(gc, args)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllCodesByTagsResolver failed : %v", err)
+	}
+
+	if sortBy.String() != EnumSort.Asc && sortBy.String() != EnumSort.Desc {
+		return nil, fmt.Errorf("sort value 'ASC' 'DESC' only: %v", err)
+	}
+
+	if sortBy.String() == EnumSort.Desc {
+		for i := 0; i < len(codes)/2; i++ {
+			codes[i], codes[len(codes)-1-i] = codes[len(codes)-1-i], codes[i]
+		}
+	}
+
+	list := make([]*model.Code, len(codes))
+	for i, c := range codes {
+		list[i] = &model.Code{
+			ID:          string(fmt.Sprint(c.ID)),
+			Username:    c.Username,
+			Code:        c.Code,
+			Img:         string(c.Img),
+			Description: c.Description,
+			Performance: c.Performance,
+			Tags:        c.Tags,
+			CreatedAt:   c.CreatedAt,
+			UpdatedAt:   c.UpdatedAt,
+			Access:      int(c.Access),
+		}
+	}
+
+	return list, nil
+}
+
+func (r *queryResolver) GetAllCodesByKeywordResolver(ctx context.Context, keyword string, limit int, skip int) ([]*model.Code, error) {
+	gc, err := GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	args := db.GetAllCodesByKeywordParams{
+		Username:    "%" + keyword + "%",
+		Code:        "%" + keyword + "%",
+		Description: "%" + keyword + "%",
+		Limit:       int32(limit),
+		Offset:      int32(skip),
+	}
+
+	codes, err := r.store.GetAllCodesByKeyword(gc, args)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllCodesByKeywordResolver failed : %v", err)
+	}
+
+	list := make([]*model.Code, len(codes))
+	for i, c := range codes {
+		list[i] = &model.Code{
+			ID:          string(fmt.Sprint(c.ID)),
+			Username:    c.Username,
+			Code:        c.Code,
+			Img:         string(c.Img),
+			Description: c.Description,
+			Performance: c.Performance,
+			Tags:        c.Tags,
+			CreatedAt:   c.CreatedAt,
+			UpdatedAt:   c.UpdatedAt,
+			Access:      int(c.Access),
+		}
+	}
+
+	return list, nil
+}
+
+func (r *queryResolver) GetAllCodesSortedStarResolver(ctx context.Context, limit int, skip int) ([]*model.Code, error) {
+	gc, err := GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	args := db.GetAllCodesSortedStarParams{
+		Limit:  int32(limit),
+		Offset: int32(skip),
+	}
+
+	codes, err := r.store.GetAllCodesSortedStar(gc, args)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllCodesSortedStarResolver failed : %v", err)
+	}
+
+	list := make([]*model.Code, len(codes))
+	for i, c := range codes {
+		list[i] = &model.Code{
+			ID:          string(fmt.Sprint(c.ID)),
+			Username:    c.Username,
+			Code:        c.Code,
+			Img:         string(c.Img),
+			Description: c.Description,
+			Performance: c.Performance,
+			Tags:        c.Tags,
+			CreatedAt:   c.CreatedAt,
+			UpdatedAt:   c.UpdatedAt,
+			Access:      int(c.Access),
+		}
+	}
+
+	return list, nil
+}
+
+func (r *queryResolver) GetAllCodesSortedAccessResolver(ctx context.Context, limit int, skip int) ([]*model.Code, error) {
+	gc, err := GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	args := db.GetAllCodesSortedAccessParams{
+		Limit:  int32(limit),
+		Offset: int32(skip),
+	}
+
+	codes, err := r.store.GetAllCodesSortedAccess(gc, args)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllCodesSortedAccessResolver failed : %v", err)
+	}
+
+	list := make([]*model.Code, len(codes))
+	for i, c := range codes {
+		list[i] = &model.Code{
+			ID:          string(fmt.Sprint(c.ID)),
+			Username:    c.Username,
+			Code:        c.Code,
+			Img:         string(c.Img),
+			Description: c.Description,
+			Performance: c.Performance,
+			Tags:        c.Tags,
+			CreatedAt:   c.CreatedAt,
+			UpdatedAt:   c.UpdatedAt,
+			Access:      int(c.Access),
+		}
+	}
+
+	return list, nil
+}
+
 func (r *mutationResolver) UpdateCodesResolver(ctx context.Context, id int, code string, img string, description string, performance string, tags []string) (*model.MutationResponse, error) {
 	res := &model.MutationResponse{
 		IsError: false,
@@ -171,198 +339,6 @@ func (r *mutationResolver) GetCodeResolver(ctx context.Context, id int) (*model.
 }
 
 // query
-
-func (r *queryResolver) GetAllCodesByTagResolver(ctx context.Context, tags []*string, sortBy model.SortBy, limit int, skip int) ([]*model.Code, error) {
-	gc, err := GinContextFromContext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("gin context convert error: %v", err)
-	}
-
-	t := make([]string, 10)
-	for i, tag := range tags {
-		t[i] = strings.ToLower(*tag)
-	}
-
-	args := db.GetAllCodesByTagParams{
-		Column1:  t[0],
-		Column2:  t[1],
-		Column3:  t[2],
-		Column4:  t[3],
-		Column5:  t[4],
-		Column6:  t[5],
-		Column7:  t[6],
-		Column8:  t[7],
-		Column9:  t[8],
-		Column10: t[9],
-		Limit:    int32(limit),
-		Offset:   int32(skip),
-	}
-
-	codes, err := r.store.GetAllCodesByTag(gc, args)
-	if err != nil {
-		return nil, fmt.Errorf("GetAllCodesByTagsResolver failed : %v", err)
-	}
-
-	if sortBy.String() != EnumSort.Asc && sortBy.String() != EnumSort.Desc {
-		return nil, fmt.Errorf("sort value 'ASC' 'DESC' only: %v", err)
-	}
-
-	if sortBy.String() == EnumSort.Desc {
-		for i := 0; i < len(codes)/2; i++ {
-			codes[i], codes[len(codes)-1-i] = codes[len(codes)-1-i], codes[i]
-		}
-	}
-
-	list := make([]*model.Code, len(codes))
-	for i, c := range codes {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(c.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
-		list[i] = &model.Code{
-			ID:          string(fmt.Sprint(c.ID)),
-			Username:    c.Username,
-			Code:        c.Code,
-			Img:         string(c.Img),
-			Description: c.Description,
-			Performance: c.Performance,
-			Star:        int(star),
-			Tags:        c.Tags,
-			CreatedAt:   c.CreatedAt,
-			UpdatedAt:   c.UpdatedAt,
-			Access:      int(c.Access),
-		}
-	}
-
-	return list, nil
-}
-
-func (r *queryResolver) GetAllCodesByKeywordResolver(ctx context.Context, keyword string, limit int, skip int) ([]*model.Code, error) {
-	gc, err := GinContextFromContext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("gin context convert error: %v", err)
-	}
-
-	args := db.GetAllCodesByKeywordParams{
-		Username:    "%" + keyword + "%",
-		Code:        "%" + keyword + "%",
-		Description: "%" + keyword + "%",
-		Limit:       int32(limit),
-		Offset:      int32(skip),
-	}
-
-	codes, err := r.store.GetAllCodesByKeyword(gc, args)
-	if err != nil {
-		return nil, fmt.Errorf("GetAllCodesByKeywordResolver failed : %v", err)
-	}
-
-	list := make([]*model.Code, len(codes))
-	for i, c := range codes {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(c.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
-		list[i] = &model.Code{
-			ID:          string(fmt.Sprint(c.ID)),
-			Username:    c.Username,
-			Code:        c.Code,
-			Img:         string(c.Img),
-			Description: c.Description,
-			Performance: c.Performance,
-			Star:        int(star),
-			Tags:        c.Tags,
-			CreatedAt:   c.CreatedAt,
-			UpdatedAt:   c.UpdatedAt,
-			Access:      int(c.Access),
-		}
-	}
-
-	return list, nil
-}
-
-func (r *queryResolver) GetAllCodesSortedStarResolver(ctx context.Context, limit int, skip int) ([]*model.Code, error) {
-	gc, err := GinContextFromContext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("gin context convert error: %v", err)
-	}
-
-	args := db.GetAllCodesSortedStarParams{
-		Limit:  int32(limit),
-		Offset: int32(skip),
-	}
-
-	codes, err := r.store.GetAllCodesSortedStar(gc, args)
-	if err != nil {
-		return nil, fmt.Errorf("GetAllCodesSortedStarResolver failed : %v", err)
-	}
-
-	list := make([]*model.Code, len(codes))
-	for i, c := range codes {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(c.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
-		list[i] = &model.Code{
-			ID:          string(fmt.Sprint(c.ID)),
-			Username:    c.Username,
-			Code:        c.Code,
-			Img:         string(c.Img),
-			Description: c.Description,
-			Performance: c.Performance,
-			Star:        int(star),
-			Tags:        c.Tags,
-			CreatedAt:   c.CreatedAt,
-			UpdatedAt:   c.UpdatedAt,
-			Access:      int(c.Access),
-		}
-	}
-
-	return list, nil
-}
-
-func (r *queryResolver) GetAllCodesSortedAccessResolver(ctx context.Context, limit int, skip int) ([]*model.Code, error) {
-	gc, err := GinContextFromContext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("gin context convert error: %v", err)
-	}
-
-	args := db.GetAllCodesSortedAccessParams{
-		Limit:  int32(limit),
-		Offset: int32(skip),
-	}
-
-	codes, err := r.store.GetAllCodesSortedAccess(gc, args)
-	if err != nil {
-		return nil, fmt.Errorf("GetAllCodesSortedAccessResolver failed : %v", err)
-	}
-
-	list := make([]*model.Code, len(codes))
-	for i, c := range codes {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(c.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
-		list[i] = &model.Code{
-			ID:          string(fmt.Sprint(c.ID)),
-			Username:    c.Username,
-			Code:        c.Code,
-			Img:         string(c.Img),
-			Description: c.Description,
-			Performance: c.Performance,
-			Star:        int(star),
-			Tags:        c.Tags,
-			CreatedAt:   c.CreatedAt,
-			UpdatedAt:   c.UpdatedAt,
-			Access:      int(c.Access),
-		}
-	}
-
-	return list, nil
-}
 
 // candidate dataloader function
 func (r *queryResolver) GetAllCodesResolver(ctx context.Context, limit int, skip int) ([]*model.Code, error) {

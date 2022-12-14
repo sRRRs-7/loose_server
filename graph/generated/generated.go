@@ -91,36 +91,32 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CountStar               func(childComplexity int, codeID int) int
-		CreateAdminCollection   func(childComplexity int, userID int, codeID int) int
-		CreateAdminStar         func(childComplexity int, userID int, codeID int) int
-		CreateAdminToken        func(childComplexity int, username string) int
-		CreateAdminUser         func(childComplexity int, username string, password string) int
-		CreateCode              func(childComplexity int, username string, code string, img string, description string, performance string, star int, tags []string, access int) int
-		CreateCollection        func(childComplexity int, codeID int) int
-		CreateMedia             func(childComplexity int, title string, contents string, img string) int
-		CreateStar              func(childComplexity int, codeID int) int
-		CreateToken             func(childComplexity int, username string) int
-		CreateUser              func(childComplexity int, username string, password string, email string, sex string, dateOfBirth string) int
-		DeleteCode              func(childComplexity int, id int) int
-		DeleteCollection        func(childComplexity int, id int) int
-		DeleteMedia             func(childComplexity int, id int) int
-		DeleteStar              func(childComplexity int, userID int, codeID int) int
-		DeleteUser              func(childComplexity int, username string) int
-		GetAdminUser            func(childComplexity int, username string, password string) int
-		GetAllCodesByKeyword    func(childComplexity int, keyword string, limit int, skip int) int
-		GetAllCodesByTag        func(childComplexity int, tags []*string, sortBy model.SortBy, limit int, skip int) int
-		GetAllCodesSortedAccess func(childComplexity int, limit int, skip int) int
-		GetAllCodesSortedStar   func(childComplexity int, limit int, skip int) int
-		GetCode                 func(childComplexity int, id int) int
-		GetCollection           func(childComplexity int, id int) int
-		GetMedia                func(childComplexity int, id int) int
-		GetUser                 func(childComplexity int, username string) int
-		LoginUser               func(childComplexity int, username string, password string) int
-		UpdateAccess            func(childComplexity int, id int, access int) int
-		UpdateCodes             func(childComplexity int, id int, code string, img string, description string, performance string, tags []string) int
-		UpdateMedia             func(childComplexity int, id string, title string, contents string, img string) int
-		UpdateUser              func(childComplexity int, username string, updateName string, email string) int
+		CountStar             func(childComplexity int, codeID int) int
+		CreateAdminCollection func(childComplexity int, userID int, codeID int) int
+		CreateAdminStar       func(childComplexity int, userID int, codeID int) int
+		CreateAdminToken      func(childComplexity int, username string) int
+		CreateAdminUser       func(childComplexity int, username string, password string) int
+		CreateCode            func(childComplexity int, username string, code string, img string, description string, performance string, star int, tags []string, access int) int
+		CreateCollection      func(childComplexity int, codeID int) int
+		CreateMedia           func(childComplexity int, title string, contents string, img string) int
+		CreateStar            func(childComplexity int, codeID int) int
+		CreateToken           func(childComplexity int, username string) int
+		CreateUser            func(childComplexity int, username string, password string, email string, sex string, dateOfBirth string) int
+		DeleteCode            func(childComplexity int, id int) int
+		DeleteCollection      func(childComplexity int, id int) int
+		DeleteMedia           func(childComplexity int, id int) int
+		DeleteStar            func(childComplexity int, userID int, codeID int) int
+		DeleteUser            func(childComplexity int, username string) int
+		GetAdminUser          func(childComplexity int, username string, password string) int
+		GetCode               func(childComplexity int, id int) int
+		GetCollection         func(childComplexity int, id int) int
+		GetMedia              func(childComplexity int, id int) int
+		GetUser               func(childComplexity int, username string) int
+		LoginUser             func(childComplexity int, username string, password string) int
+		UpdateAccess          func(childComplexity int, id int, access int) int
+		UpdateCodes           func(childComplexity int, id int, code string, img string, description string, performance string, tags []string) int
+		UpdateMedia           func(childComplexity int, id string, title string, contents string, img string) int
+		UpdateUser            func(childComplexity int, username string, updateName string, email string) int
 	}
 
 	MutationResponse struct {
@@ -130,9 +126,13 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetAllCodes      func(childComplexity int, limit int, skip int) int
-		GetAllCollection func(childComplexity int, limit int, skip int) int
-		GetAllMedia      func(childComplexity int, limit int, skip int) int
+		GetAllCodes             func(childComplexity int, limit int, skip int) int
+		GetAllCodesByKeyword    func(childComplexity int, keyword string, limit int, skip int) int
+		GetAllCodesByTag        func(childComplexity int, tags []*string, sortBy model.SortBy, limit int, skip int) int
+		GetAllCodesSortedAccess func(childComplexity int, limit int, skip int) int
+		GetAllCodesSortedStar   func(childComplexity int, limit int, skip int) int
+		GetAllCollection        func(childComplexity int, limit int, skip int) int
+		GetAllMedia             func(childComplexity int, limit int, skip int) int
 	}
 
 	Star struct {
@@ -169,12 +169,8 @@ type MutationResolver interface {
 	CreateAdminUser(ctx context.Context, username string, password string) (*model.MutationResponse, error)
 	GetAdminUser(ctx context.Context, username string, password string) (*model.AdminUserResponse, error)
 	CreateCode(ctx context.Context, username string, code string, img string, description string, performance string, star int, tags []string, access int) (*model.MutationResponse, error)
-	GetAllCodesByTag(ctx context.Context, tags []*string, sortBy model.SortBy, limit int, skip int) ([]*model.Code, error)
 	UpdateCodes(ctx context.Context, id int, code string, img string, description string, performance string, tags []string) (*model.MutationResponse, error)
 	GetCode(ctx context.Context, id int) (*model.Code, error)
-	GetAllCodesByKeyword(ctx context.Context, keyword string, limit int, skip int) ([]*model.Code, error)
-	GetAllCodesSortedStar(ctx context.Context, limit int, skip int) ([]*model.Code, error)
-	GetAllCodesSortedAccess(ctx context.Context, limit int, skip int) ([]*model.Code, error)
 	UpdateAccess(ctx context.Context, id int, access int) (*model.MutationResponse, error)
 	DeleteCode(ctx context.Context, id int) (*model.MutationResponse, error)
 	CreateCollection(ctx context.Context, codeID int) (*model.MutationResponse, error)
@@ -199,6 +195,10 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetAllCodes(ctx context.Context, limit int, skip int) ([]*model.Code, error)
+	GetAllCodesByKeyword(ctx context.Context, keyword string, limit int, skip int) ([]*model.Code, error)
+	GetAllCodesSortedStar(ctx context.Context, limit int, skip int) ([]*model.Code, error)
+	GetAllCodesSortedAccess(ctx context.Context, limit int, skip int) ([]*model.Code, error)
+	GetAllCodesByTag(ctx context.Context, tags []*string, sortBy model.SortBy, limit int, skip int) ([]*model.Code, error)
 	GetAllCollection(ctx context.Context, limit int, skip int) ([]*model.CodeWithCollectionID, error)
 	GetAllMedia(ctx context.Context, limit int, skip int) ([]*model.Media, error)
 }
@@ -646,54 +646,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.GetAdminUser(childComplexity, args["username"].(string), args["password"].(string)), true
 
-	case "Mutation.GetAllCodesByKeyword":
-		if e.complexity.Mutation.GetAllCodesByKeyword == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_GetAllCodesByKeyword_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.GetAllCodesByKeyword(childComplexity, args["keyword"].(string), args["limit"].(int), args["skip"].(int)), true
-
-	case "Mutation.getAllCodesByTag":
-		if e.complexity.Mutation.GetAllCodesByTag == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_getAllCodesByTag_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.GetAllCodesByTag(childComplexity, args["tags"].([]*string), args["sortBy"].(model.SortBy), args["limit"].(int), args["skip"].(int)), true
-
-	case "Mutation.GetAllCodesSortedAccess":
-		if e.complexity.Mutation.GetAllCodesSortedAccess == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_GetAllCodesSortedAccess_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.GetAllCodesSortedAccess(childComplexity, args["limit"].(int), args["skip"].(int)), true
-
-	case "Mutation.GetAllCodesSortedStar":
-		if e.complexity.Mutation.GetAllCodesSortedStar == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_GetAllCodesSortedStar_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.GetAllCodesSortedStar(childComplexity, args["limit"].(int), args["skip"].(int)), true
-
 	case "Mutation.getCode":
 		if e.complexity.Mutation.GetCode == nil {
 			break
@@ -834,6 +786,54 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetAllCodes(childComplexity, args["limit"].(int), args["skip"].(int)), true
+
+	case "Query.GetAllCodesByKeyword":
+		if e.complexity.Query.GetAllCodesByKeyword == nil {
+			break
+		}
+
+		args, err := ec.field_Query_GetAllCodesByKeyword_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAllCodesByKeyword(childComplexity, args["keyword"].(string), args["limit"].(int), args["skip"].(int)), true
+
+	case "Query.getAllCodesByTag":
+		if e.complexity.Query.GetAllCodesByTag == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getAllCodesByTag_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAllCodesByTag(childComplexity, args["tags"].([]*string), args["sortBy"].(model.SortBy), args["limit"].(int), args["skip"].(int)), true
+
+	case "Query.GetAllCodesSortedAccess":
+		if e.complexity.Query.GetAllCodesSortedAccess == nil {
+			break
+		}
+
+		args, err := ec.field_Query_GetAllCodesSortedAccess_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAllCodesSortedAccess(childComplexity, args["limit"].(int), args["skip"].(int)), true
+
+	case "Query.GetAllCodesSortedStar":
+		if e.complexity.Query.GetAllCodesSortedStar == nil {
+			break
+		}
+
+		args, err := ec.field_Query_GetAllCodesSortedStar_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAllCodesSortedStar(childComplexity, args["limit"].(int), args["skip"].(int)), true
 
 	case "Query.getAllCollection":
 		if e.complexity.Query.GetAllCollection == nil {
@@ -1087,6 +1087,15 @@ type Code implements Node {
 }
 extend type Query {
   getAllCodes(limit: Int!, skip: Int!): [Code!]!
+  GetAllCodesByKeyword(keyword: String!, limit: Int!, skip: Int!): [Code!]!
+  GetAllCodesSortedStar(limit: Int!, skip: Int!): [Code!]!
+  GetAllCodesSortedAccess(limit: Int!, skip: Int!): [Code!]!
+  getAllCodesByTag(
+    tags: [String]!
+    sortBy: SortBy!
+    limit: Int!
+    skip: Int!
+  ): [Code!]!
 }
 extend type Mutation {
   createCode(
@@ -1099,12 +1108,6 @@ extend type Mutation {
     tags: [String!]!
     access: Int!
   ): MutationResponse!
-  getAllCodesByTag(
-    tags: [String]!
-    sortBy: SortBy!
-    limit: Int!
-    skip: Int!
-  ): [Code!]!
   updateCodes(
     id: Int!
     code: String!
@@ -1114,9 +1117,6 @@ extend type Mutation {
     tags: [String!]!
   ): MutationResponse!
   getCode(id: Int!): Code!
-  GetAllCodesByKeyword(keyword: String!, limit: Int!, skip: Int!): [Code!]!
-  GetAllCodesSortedStar(limit: Int!, skip: Int!): [Code!]!
-  GetAllCodesSortedAccess(limit: Int!, skip: Int!): [Code!]!
   updateAccess(id: Int!, access: Int!): MutationResponse!
   deleteCode(id: Int!): MutationResponse!
 }
@@ -1257,87 +1257,6 @@ func (ec *executionContext) dir_validation_args(ctx context.Context, rawArgs map
 		}
 	}
 	args["format"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_GetAllCodesByKeyword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["keyword"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyword"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["keyword"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["limit"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["limit"] = arg1
-	var arg2 int
-	if tmp, ok := rawArgs["skip"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
-		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["skip"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_GetAllCodesSortedAccess_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["limit"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["limit"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["skip"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["skip"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_GetAllCodesSortedStar_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["limit"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["limit"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["skip"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["skip"] = arg1
 	return args, nil
 }
 
@@ -1758,48 +1677,6 @@ func (ec *executionContext) field_Mutation_getAdminUser_args(ctx context.Context
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_getAllCodesByTag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 []*string
-	if tmp, ok := rawArgs["tags"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
-		arg0, err = ec.unmarshalNString2ᚕᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["tags"] = arg0
-	var arg1 model.SortBy
-	if tmp, ok := rawArgs["sortBy"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortBy"))
-		arg1, err = ec.unmarshalNSortBy2githubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐSortBy(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["sortBy"] = arg1
-	var arg2 int
-	if tmp, ok := rawArgs["limit"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["limit"] = arg2
-	var arg3 int
-	if tmp, ok := rawArgs["skip"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
-		arg3, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["skip"] = arg3
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_getCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2043,6 +1920,87 @@ func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, 
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_GetAllCodesByKeyword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["keyword"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyword"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["keyword"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["skip"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["skip"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_GetAllCodesSortedAccess_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["skip"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["skip"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_GetAllCodesSortedStar_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["skip"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["skip"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2055,6 +2013,48 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getAllCodesByTag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*string
+	if tmp, ok := rawArgs["tags"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+		arg0, err = ec.unmarshalNString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tags"] = arg0
+	var arg1 model.SortBy
+	if tmp, ok := rawArgs["sortBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortBy"))
+		arg1, err = ec.unmarshalNSortBy2githubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐSortBy(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["sortBy"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg2
+	var arg3 int
+	if tmp, ok := rawArgs["skip"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
+		arg3, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["skip"] = arg3
 	return args, nil
 }
 
@@ -3765,85 +3765,6 @@ func (ec *executionContext) fieldContext_Mutation_createCode(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_getAllCodesByTag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_getAllCodesByTag(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GetAllCodesByTag(rctx, fc.Args["tags"].([]*string), fc.Args["sortBy"].(model.SortBy), fc.Args["limit"].(int), fc.Args["skip"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Code)
-	fc.Result = res
-	return ec.marshalNCode2ᚕᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCodeᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_getAllCodesByTag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Code_id(ctx, field)
-			case "username":
-				return ec.fieldContext_Code_username(ctx, field)
-			case "code":
-				return ec.fieldContext_Code_code(ctx, field)
-			case "img":
-				return ec.fieldContext_Code_img(ctx, field)
-			case "description":
-				return ec.fieldContext_Code_description(ctx, field)
-			case "performance":
-				return ec.fieldContext_Code_performance(ctx, field)
-			case "star":
-				return ec.fieldContext_Code_star(ctx, field)
-			case "tags":
-				return ec.fieldContext_Code_tags(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Code_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Code_updated_at(ctx, field)
-			case "access":
-				return ec.fieldContext_Code_access(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_getAllCodesByTag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_updateCodes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_updateCodes(ctx, field)
 	if err != nil {
@@ -3980,243 +3901,6 @@ func (ec *executionContext) fieldContext_Mutation_getCode(ctx context.Context, f
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_getCode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_GetAllCodesByKeyword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_GetAllCodesByKeyword(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GetAllCodesByKeyword(rctx, fc.Args["keyword"].(string), fc.Args["limit"].(int), fc.Args["skip"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Code)
-	fc.Result = res
-	return ec.marshalNCode2ᚕᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCodeᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_GetAllCodesByKeyword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Code_id(ctx, field)
-			case "username":
-				return ec.fieldContext_Code_username(ctx, field)
-			case "code":
-				return ec.fieldContext_Code_code(ctx, field)
-			case "img":
-				return ec.fieldContext_Code_img(ctx, field)
-			case "description":
-				return ec.fieldContext_Code_description(ctx, field)
-			case "performance":
-				return ec.fieldContext_Code_performance(ctx, field)
-			case "star":
-				return ec.fieldContext_Code_star(ctx, field)
-			case "tags":
-				return ec.fieldContext_Code_tags(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Code_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Code_updated_at(ctx, field)
-			case "access":
-				return ec.fieldContext_Code_access(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_GetAllCodesByKeyword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_GetAllCodesSortedStar(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_GetAllCodesSortedStar(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GetAllCodesSortedStar(rctx, fc.Args["limit"].(int), fc.Args["skip"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Code)
-	fc.Result = res
-	return ec.marshalNCode2ᚕᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCodeᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_GetAllCodesSortedStar(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Code_id(ctx, field)
-			case "username":
-				return ec.fieldContext_Code_username(ctx, field)
-			case "code":
-				return ec.fieldContext_Code_code(ctx, field)
-			case "img":
-				return ec.fieldContext_Code_img(ctx, field)
-			case "description":
-				return ec.fieldContext_Code_description(ctx, field)
-			case "performance":
-				return ec.fieldContext_Code_performance(ctx, field)
-			case "star":
-				return ec.fieldContext_Code_star(ctx, field)
-			case "tags":
-				return ec.fieldContext_Code_tags(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Code_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Code_updated_at(ctx, field)
-			case "access":
-				return ec.fieldContext_Code_access(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_GetAllCodesSortedStar_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_GetAllCodesSortedAccess(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_GetAllCodesSortedAccess(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GetAllCodesSortedAccess(rctx, fc.Args["limit"].(int), fc.Args["skip"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Code)
-	fc.Result = res
-	return ec.marshalNCode2ᚕᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCodeᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_GetAllCodesSortedAccess(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Code_id(ctx, field)
-			case "username":
-				return ec.fieldContext_Code_username(ctx, field)
-			case "code":
-				return ec.fieldContext_Code_code(ctx, field)
-			case "img":
-				return ec.fieldContext_Code_img(ctx, field)
-			case "description":
-				return ec.fieldContext_Code_description(ctx, field)
-			case "performance":
-				return ec.fieldContext_Code_performance(ctx, field)
-			case "star":
-				return ec.fieldContext_Code_star(ctx, field)
-			case "tags":
-				return ec.fieldContext_Code_tags(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Code_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Code_updated_at(ctx, field)
-			case "access":
-				return ec.fieldContext_Code_access(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_GetAllCodesSortedAccess_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -5735,6 +5419,322 @@ func (ec *executionContext) fieldContext_Query_getAllCodes(ctx context.Context, 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getAllCodes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_GetAllCodesByKeyword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_GetAllCodesByKeyword(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAllCodesByKeyword(rctx, fc.Args["keyword"].(string), fc.Args["limit"].(int), fc.Args["skip"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Code)
+	fc.Result = res
+	return ec.marshalNCode2ᚕᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCodeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_GetAllCodesByKeyword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Code_id(ctx, field)
+			case "username":
+				return ec.fieldContext_Code_username(ctx, field)
+			case "code":
+				return ec.fieldContext_Code_code(ctx, field)
+			case "img":
+				return ec.fieldContext_Code_img(ctx, field)
+			case "description":
+				return ec.fieldContext_Code_description(ctx, field)
+			case "performance":
+				return ec.fieldContext_Code_performance(ctx, field)
+			case "star":
+				return ec.fieldContext_Code_star(ctx, field)
+			case "tags":
+				return ec.fieldContext_Code_tags(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Code_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Code_updated_at(ctx, field)
+			case "access":
+				return ec.fieldContext_Code_access(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_GetAllCodesByKeyword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_GetAllCodesSortedStar(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_GetAllCodesSortedStar(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAllCodesSortedStar(rctx, fc.Args["limit"].(int), fc.Args["skip"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Code)
+	fc.Result = res
+	return ec.marshalNCode2ᚕᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCodeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_GetAllCodesSortedStar(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Code_id(ctx, field)
+			case "username":
+				return ec.fieldContext_Code_username(ctx, field)
+			case "code":
+				return ec.fieldContext_Code_code(ctx, field)
+			case "img":
+				return ec.fieldContext_Code_img(ctx, field)
+			case "description":
+				return ec.fieldContext_Code_description(ctx, field)
+			case "performance":
+				return ec.fieldContext_Code_performance(ctx, field)
+			case "star":
+				return ec.fieldContext_Code_star(ctx, field)
+			case "tags":
+				return ec.fieldContext_Code_tags(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Code_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Code_updated_at(ctx, field)
+			case "access":
+				return ec.fieldContext_Code_access(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_GetAllCodesSortedStar_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_GetAllCodesSortedAccess(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_GetAllCodesSortedAccess(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAllCodesSortedAccess(rctx, fc.Args["limit"].(int), fc.Args["skip"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Code)
+	fc.Result = res
+	return ec.marshalNCode2ᚕᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCodeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_GetAllCodesSortedAccess(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Code_id(ctx, field)
+			case "username":
+				return ec.fieldContext_Code_username(ctx, field)
+			case "code":
+				return ec.fieldContext_Code_code(ctx, field)
+			case "img":
+				return ec.fieldContext_Code_img(ctx, field)
+			case "description":
+				return ec.fieldContext_Code_description(ctx, field)
+			case "performance":
+				return ec.fieldContext_Code_performance(ctx, field)
+			case "star":
+				return ec.fieldContext_Code_star(ctx, field)
+			case "tags":
+				return ec.fieldContext_Code_tags(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Code_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Code_updated_at(ctx, field)
+			case "access":
+				return ec.fieldContext_Code_access(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_GetAllCodesSortedAccess_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getAllCodesByTag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getAllCodesByTag(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAllCodesByTag(rctx, fc.Args["tags"].([]*string), fc.Args["sortBy"].(model.SortBy), fc.Args["limit"].(int), fc.Args["skip"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Code)
+	fc.Result = res
+	return ec.marshalNCode2ᚕᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCodeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getAllCodesByTag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Code_id(ctx, field)
+			case "username":
+				return ec.fieldContext_Code_username(ctx, field)
+			case "code":
+				return ec.fieldContext_Code_code(ctx, field)
+			case "img":
+				return ec.fieldContext_Code_img(ctx, field)
+			case "description":
+				return ec.fieldContext_Code_description(ctx, field)
+			case "performance":
+				return ec.fieldContext_Code_performance(ctx, field)
+			case "star":
+				return ec.fieldContext_Code_star(ctx, field)
+			case "tags":
+				return ec.fieldContext_Code_tags(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Code_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Code_updated_at(ctx, field)
+			case "access":
+				return ec.fieldContext_Code_access(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getAllCodesByTag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -8975,15 +8975,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "getAllCodesByTag":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_getAllCodesByTag(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "updateCodes":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -8997,33 +8988,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_getCode(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "GetAllCodesByKeyword":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_GetAllCodesByKeyword(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "GetAllCodesSortedStar":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_GetAllCodesSortedStar(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "GetAllCodesSortedAccess":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_GetAllCodesSortedAccess(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -9300,6 +9264,98 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getAllCodes(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "GetAllCodesByKeyword":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetAllCodesByKeyword(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "GetAllCodesSortedStar":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetAllCodesSortedStar(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "GetAllCodesSortedAccess":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetAllCodesSortedAccess(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getAllCodesByTag":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getAllCodesByTag(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
