@@ -2,6 +2,8 @@ memo
 docker
 sql_migrate.yml -> localhost -> postgres
 
+postgres store image type OK
+
 mock test
 
 github actions
@@ -13,6 +15,8 @@ hebon
 
 update access transaction sqlc
 update star transaction sqlc
+
+HTTPS + TOKEN + FORM auth
 
 - log in
 - log out

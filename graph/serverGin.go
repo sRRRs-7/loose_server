@@ -32,9 +32,7 @@ func (r *Resolver) GinRouter(tokenMaker token.Maker) {
 	playGroundRouter.GET("/query", graphqlHandler(r))
 
 	// bearer auth router
-	adminRouter := router.Group("/admin", gin.BasicAuth(gin.Accounts{
-		"srrrs": "secret",
-	}))
+	adminRouter := router.Group("/admin")
 	adminRouter.Use(GinContextMiddleware())
 	adminRouter.POST("/query", graphqlHandler(r))
 	adminRouter.GET("/query", playgroundHandler())
