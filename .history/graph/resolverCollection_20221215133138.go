@@ -258,8 +258,6 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 		Offset:      int32(skip),
 	}
 
-	fmt.Println(id)
-
 	// get all collection
 	collections, err := r.store.GetAllCollectionsBySearch(gc, args)
 	if err != nil {

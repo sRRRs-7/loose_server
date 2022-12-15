@@ -161,9 +161,8 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	// redis value get
 	redisValue := session.GetRedis(gc, key)
 	if redisValue == nil {
-		return nil, fmt.Errorf("GetAllCollectionResolver error in get redis value : %v", err)
+		return nil, fmt.Errorf("GetAllCartCollection error in get redis value : %v", err)
 	}
-
 	// string processing
 	s := strings.Split(redisValue.String(), ",")
 	s = strings.Split(s[1], ":")
@@ -174,7 +173,7 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	// get user id
 	id, err := r.store.GetUser(gc, userId)
 	if err != nil {
-		return nil, fmt.Errorf("GetUser error in GetAllCollectionBySearchResolver: %v", err)
+		return nil, fmt.Errorf("GetUser error in GetAllCollection: %v", err)
 	}
 
 	args := db.GetAllCollectionsParams{
@@ -186,16 +185,11 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	// get all collection
 	collections, err := r.store.GetAllCollections(gc, args)
 	if err != nil {
-		return nil, fmt.Errorf("GetCollectionBySearchResolver error : %v", err)
+		return nil, fmt.Errorf("GetCollectionResolver error : %v", err)
 	}
 
 	convertCol := make([]*model.CodeWithCollectionID, len(collections))
 	for i, col := range collections {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(col.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
 		convertCol[i] = &model.CodeWithCollectionID{
 			ID:           string(fmt.Sprint(col.ID)),
 			Username:     col.Username,
@@ -203,7 +197,6 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 			Img:          string(col.Img),
 			Description:  col.Description,
 			Performance:  col.Performance,
-			Star:         int(star),
 			Tags:         col.Tags,
 			CreatedAt:    col.CreatedAt,
 			UpdatedAt:    col.UpdatedAt,
@@ -215,7 +208,7 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	return convertCol, nil
 }
 
-func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, keyword string, limit int, skip int) ([]*model.CodeWithCollectionID, error) {
+func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, keyword string, limit int, skip int) ([]*model.Code, error) {
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
@@ -235,7 +228,6 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 	if redisValue == nil {
 		return nil, fmt.Errorf("GetAllCartCollectionBySearchResolver error in get redis value : %v", err)
 	}
-
 	// string processing
 	s := strings.Split(redisValue.String(), ",")
 	s = strings.Split(s[1], ":")
@@ -249,30 +241,20 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 		return nil, fmt.Errorf("GetUser error in GetAllCollectionSearchResolver: %v", err)
 	}
 
-	args := db.GetAllCollectionsBySearchParams{
-		UserID:      id,
-		Username:    "%" + keyword + "%",
-		Code:        "%" + keyword + "%",
-		Description: "%" + keyword + "%",
-		Limit:       int32(limit),
-		Offset:      int32(skip),
+	args := db.GetAllCollectionsParams{
+		UserID: id,
+		Limit:  int32(limit),
+		Offset: int32(skip),
 	}
 
-	fmt.Println(id)
-
 	// get all collection
-	collections, err := r.store.GetAllCollectionsBySearch(gc, args)
+	collections, err := r.store.GetAllCollections(gc, args)
 	if err != nil {
 		return nil, fmt.Errorf("GetCollectionBySearchResolver error : %v", err)
 	}
 
 	convertCol := make([]*model.CodeWithCollectionID, len(collections))
 	for i, col := range collections {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(col.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
 		convertCol[i] = &model.CodeWithCollectionID{
 			ID:           string(fmt.Sprint(col.ID)),
 			Username:     col.Username,
@@ -280,7 +262,6 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 			Img:          string(col.Img),
 			Description:  col.Description,
 			Performance:  col.Performance,
-			Star:         int(star),
 			Tags:         col.Tags,
 			CreatedAt:    col.CreatedAt,
 			UpdatedAt:    col.UpdatedAt,

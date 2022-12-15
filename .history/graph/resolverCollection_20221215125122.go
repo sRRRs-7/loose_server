@@ -191,11 +191,6 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 
 	convertCol := make([]*model.CodeWithCollectionID, len(collections))
 	for i, col := range collections {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(col.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
 		convertCol[i] = &model.CodeWithCollectionID{
 			ID:           string(fmt.Sprint(col.ID)),
 			Username:     col.Username,
@@ -203,7 +198,6 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 			Img:          string(col.Img),
 			Description:  col.Description,
 			Performance:  col.Performance,
-			Star:         int(star),
 			Tags:         col.Tags,
 			CreatedAt:    col.CreatedAt,
 			UpdatedAt:    col.UpdatedAt,
@@ -250,15 +244,13 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 	}
 
 	args := db.GetAllCollectionsBySearchParams{
-		UserID:      id,
+		UserID:      1,
 		Username:    "%" + keyword + "%",
 		Code:        "%" + keyword + "%",
 		Description: "%" + keyword + "%",
 		Limit:       int32(limit),
 		Offset:      int32(skip),
 	}
-
-	fmt.Println(id)
 
 	// get all collection
 	collections, err := r.store.GetAllCollectionsBySearch(gc, args)
@@ -268,11 +260,6 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 
 	convertCol := make([]*model.CodeWithCollectionID, len(collections))
 	for i, col := range collections {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(col.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
 		convertCol[i] = &model.CodeWithCollectionID{
 			ID:           string(fmt.Sprint(col.ID)),
 			Username:     col.Username,
@@ -280,7 +267,6 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 			Img:          string(col.Img),
 			Description:  col.Description,
 			Performance:  col.Performance,
-			Star:         int(star),
 			Tags:         col.Tags,
 			CreatedAt:    col.CreatedAt,
 			UpdatedAt:    col.UpdatedAt,

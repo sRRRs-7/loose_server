@@ -274,12 +274,8 @@ func (r *queryResolver) GetAllCollection(ctx context.Context, limit int, skip in
 	return res, nil
 }
 
-func (r *queryResolver) GetAllCollectionBySearch(ctx context.Context, keyword string, limit int, skip int) ([]*model.CodeWithCollectionID, error) {
-	res, err := r.GetAllCollectionBySearchResolver(ctx, keyword, limit, skip)
-	if err != nil {
-		return nil, fmt.Errorf("GetAllCollectionBySearch error: %v", err)
-	}
-	return res, nil
+func (r *queryResolver) GetAllCollectionBySearch(ctx context.Context, keyword string, limit int, skip int) ([]*model.Code, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) GetAllMedia(ctx context.Context, limit int, skip int) ([]*model.Media, error) {

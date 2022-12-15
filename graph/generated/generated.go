@@ -126,13 +126,14 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetAllCodes             func(childComplexity int, limit int, skip int) int
-		GetAllCodesByKeyword    func(childComplexity int, keyword string, limit int, skip int) int
-		GetAllCodesByTag        func(childComplexity int, tags []*string, sortBy model.SortBy, limit int, skip int) int
-		GetAllCodesSortedAccess func(childComplexity int, limit int, skip int) int
-		GetAllCodesSortedStar   func(childComplexity int, limit int, skip int) int
-		GetAllCollection        func(childComplexity int, limit int, skip int) int
-		GetAllMedia             func(childComplexity int, limit int, skip int) int
+		GetAllCodes              func(childComplexity int, limit int, skip int) int
+		GetAllCodesByKeyword     func(childComplexity int, keyword string, limit int, skip int) int
+		GetAllCodesByTag         func(childComplexity int, tags []*string, sortBy model.SortBy, limit int, skip int) int
+		GetAllCodesSortedAccess  func(childComplexity int, limit int, skip int) int
+		GetAllCodesSortedStar    func(childComplexity int, limit int, skip int) int
+		GetAllCollection         func(childComplexity int, limit int, skip int) int
+		GetAllCollectionBySearch func(childComplexity int, keyword string, limit int, skip int) int
+		GetAllMedia              func(childComplexity int, limit int, skip int) int
 	}
 
 	Star struct {
@@ -200,6 +201,7 @@ type QueryResolver interface {
 	GetAllCodesSortedAccess(ctx context.Context, limit int, skip int) ([]*model.Code, error)
 	GetAllCodesByTag(ctx context.Context, tags []*string, sortBy model.SortBy, limit int, skip int) ([]*model.Code, error)
 	GetAllCollection(ctx context.Context, limit int, skip int) ([]*model.CodeWithCollectionID, error)
+	GetAllCollectionBySearch(ctx context.Context, keyword string, limit int, skip int) ([]*model.CodeWithCollectionID, error)
 	GetAllMedia(ctx context.Context, limit int, skip int) ([]*model.Media, error)
 }
 
@@ -847,6 +849,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetAllCollection(childComplexity, args["limit"].(int), args["skip"].(int)), true
 
+	case "Query.getAllCollectionBySearch":
+		if e.complexity.Query.GetAllCollectionBySearch == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getAllCollectionBySearch_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAllCollectionBySearch(childComplexity, args["keyword"].(string), args["limit"].(int), args["skip"].(int)), true
+
 	case "Query.getAllMedia":
 		if e.complexity.Query.GetAllMedia == nil {
 			break
@@ -1143,6 +1157,11 @@ type Code_with_CollectionId implements Node {
 }
 extend type Query {
   getAllCollection(limit: Int!, skip: Int!): [Code_with_CollectionId!]!
+  getAllCollectionBySearch(
+    keyword: String!
+    limit: Int!
+    skip: Int!
+  ): [Code_with_CollectionId!]!
 }
 extend type Mutation {
   createCollection(code_id: Int!): MutationResponse!
@@ -2079,6 +2098,39 @@ func (ec *executionContext) field_Query_getAllCodes_args(ctx context.Context, ra
 		}
 	}
 	args["skip"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getAllCollectionBySearch_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["keyword"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyword"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["keyword"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["skip"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["skip"] = arg2
 	return args, nil
 }
 
@@ -5822,6 +5874,87 @@ func (ec *executionContext) fieldContext_Query_getAllCollection(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_getAllCollectionBySearch(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getAllCollectionBySearch(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAllCollectionBySearch(rctx, fc.Args["keyword"].(string), fc.Args["limit"].(int), fc.Args["skip"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.CodeWithCollectionID)
+	fc.Result = res
+	return ec.marshalNCode_with_CollectionId2ᚕᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCodeWithCollectionIDᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getAllCollectionBySearch(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Code_with_CollectionId_id(ctx, field)
+			case "username":
+				return ec.fieldContext_Code_with_CollectionId_username(ctx, field)
+			case "code":
+				return ec.fieldContext_Code_with_CollectionId_code(ctx, field)
+			case "img":
+				return ec.fieldContext_Code_with_CollectionId_img(ctx, field)
+			case "description":
+				return ec.fieldContext_Code_with_CollectionId_description(ctx, field)
+			case "performance":
+				return ec.fieldContext_Code_with_CollectionId_performance(ctx, field)
+			case "star":
+				return ec.fieldContext_Code_with_CollectionId_star(ctx, field)
+			case "tags":
+				return ec.fieldContext_Code_with_CollectionId_tags(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Code_with_CollectionId_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Code_with_CollectionId_updated_at(ctx, field)
+			case "access":
+				return ec.fieldContext_Code_with_CollectionId_access(ctx, field)
+			case "collection_id":
+				return ec.fieldContext_Code_with_CollectionId_collection_id(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Code_with_CollectionId", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getAllCollectionBySearch_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_getAllMedia(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_getAllMedia(ctx, field)
 	if err != nil {
@@ -9379,6 +9512,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getAllCollection(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getAllCollectionBySearch":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getAllCollectionBySearch(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

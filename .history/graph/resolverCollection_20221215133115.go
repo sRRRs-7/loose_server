@@ -192,7 +192,7 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	convertCol := make([]*model.CodeWithCollectionID, len(collections))
 	for i, col := range collections {
 		// get star count
-		star, err := r.store.CountStar(gc, int64(col.ID))
+		star, err := r.store.CountStar(gc, int64(c.ID))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get CountStar: %v", err)
 		}
@@ -203,7 +203,6 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 			Img:          string(col.Img),
 			Description:  col.Description,
 			Performance:  col.Performance,
-			Star:         int(star),
 			Tags:         col.Tags,
 			CreatedAt:    col.CreatedAt,
 			UpdatedAt:    col.UpdatedAt,
@@ -258,8 +257,6 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 		Offset:      int32(skip),
 	}
 
-	fmt.Println(id)
-
 	// get all collection
 	collections, err := r.store.GetAllCollectionsBySearch(gc, args)
 	if err != nil {
@@ -280,7 +277,7 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 			Img:          string(col.Img),
 			Description:  col.Description,
 			Performance:  col.Performance,
-			Star:         int(star),
+			Star:         star,
 			Tags:         col.Tags,
 			CreatedAt:    col.CreatedAt,
 			UpdatedAt:    col.UpdatedAt,

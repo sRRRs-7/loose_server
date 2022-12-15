@@ -28,6 +28,7 @@ type Querier interface {
 	GetAllCodesSortedAccess(ctx context.Context, arg GetAllCodesSortedAccessParams) ([]*Codes, error)
 	GetAllCodesSortedStar(ctx context.Context, arg GetAllCodesSortedStarParams) ([]*Codes, error)
 	GetAllCollections(ctx context.Context, arg GetAllCollectionsParams) ([]*GetAllCollectionsRow, error)
+	GetAllCollectionsBySearch(ctx context.Context, arg GetAllCollectionsBySearchParams) ([]*GetAllCollectionsBySearchRow, error)
 	GetCode(ctx context.Context, id int64) (*Codes, error)
 	GetCollection(ctx context.Context, id int64) (*Codes, error)
 	GetMedia(ctx context.Context, id int64) (*Media, error)

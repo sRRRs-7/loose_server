@@ -161,9 +161,8 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	// redis value get
 	redisValue := session.GetRedis(gc, key)
 	if redisValue == nil {
-		return nil, fmt.Errorf("GetAllCollectionResolver error in get redis value : %v", err)
+		return nil, fmt.Errorf("GetAllCartCollection error in get redis value : %v", err)
 	}
-
 	// string processing
 	s := strings.Split(redisValue.String(), ",")
 	s = strings.Split(s[1], ":")
@@ -174,7 +173,72 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	// get user id
 	id, err := r.store.GetUser(gc, userId)
 	if err != nil {
-		return nil, fmt.Errorf("GetUser error in GetAllCollectionBySearchResolver: %v", err)
+		return nil, fmt.Errorf("GetUser error in GetAllCollection: %v", err)
+	}
+
+	args := db.GetAllCollectionsParams{
+		UserID: id,
+		Limit:  int32(limit),
+		Offset: int32(skip),
+	}
+
+	// get all collection
+	collections, err := r.store.GetAllCollections(gc, args)
+	if err != nil {
+		return nil, fmt.Errorf("GetCollectionResolver error : %v", err)
+	}
+
+	convertCol := make([]*model.CodeWithCollectionID, len(collections))
+	for i, col := range collections {
+		convertCol[i] = &model.CodeWithCollectionID{
+			ID:           string(fmt.Sprint(col.ID)),
+			Username:     col.Username,
+			Code:         col.Code,
+			Img:          string(col.Img),
+			Description:  col.Description,
+			Performance:  col.Performance,
+			Tags:         col.Tags,
+			CreatedAt:    col.CreatedAt,
+			UpdatedAt:    col.UpdatedAt,
+			Access:       int(col.Access),
+			CollectionID: int(col.ID_2),
+		}
+	}
+
+	return convertCol, nil
+}
+
+func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, keyword string, limit int, skip int) ([]*model.Code, error) {
+	gc, err := GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+	accessToken := fields[1]
+
+	key, err := cryptography.HashPassword(accessToken)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllCollectionResolver error: %v", err)
+	}
+
+	// redis value get
+	redisValue := session.GetRedis(gc, key)
+	if redisValue == nil {
+		return nil, fmt.Errorf("GetAllCartCollection error in get redis value : %v", err)
+	}
+	// string processing
+	s := strings.Split(redisValue.String(), ",")
+	s = strings.Split(s[1], ":")
+	userId := s[1]
+	userId = userId[1:]
+	userId = userId[:len(userId)-1]
+
+	// get user id
+	id, err := r.store.GetUser(gc, userId)
+	if err != nil {
+		return nil, fmt.Errorf("GetUser error in GetAllCollection: %v", err)
 	}
 
 	args := db.GetAllCollectionsParams{
@@ -191,11 +255,6 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 
 	convertCol := make([]*model.CodeWithCollectionID, len(collections))
 	for i, col := range collections {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(col.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
 		convertCol[i] = &model.CodeWithCollectionID{
 			ID:           string(fmt.Sprint(col.ID)),
 			Username:     col.Username,
@@ -203,84 +262,6 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 			Img:          string(col.Img),
 			Description:  col.Description,
 			Performance:  col.Performance,
-			Star:         int(star),
-			Tags:         col.Tags,
-			CreatedAt:    col.CreatedAt,
-			UpdatedAt:    col.UpdatedAt,
-			Access:       int(col.Access),
-			CollectionID: int(col.ID_2),
-		}
-	}
-
-	return convertCol, nil
-}
-
-func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, keyword string, limit int, skip int) ([]*model.CodeWithCollectionID, error) {
-	gc, err := GinContextFromContext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("gin context convert error: %v", err)
-	}
-
-	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
-	fields := strings.Split(authorizationHeader, " ")
-	accessToken := fields[1]
-
-	key, err := cryptography.HashPassword(accessToken)
-	if err != nil {
-		return nil, fmt.Errorf("GetAllCollectionBySearchResolver error: %v", err)
-	}
-
-	// redis value get
-	redisValue := session.GetRedis(gc, key)
-	if redisValue == nil {
-		return nil, fmt.Errorf("GetAllCartCollectionBySearchResolver error in get redis value : %v", err)
-	}
-
-	// string processing
-	s := strings.Split(redisValue.String(), ",")
-	s = strings.Split(s[1], ":")
-	userId := s[1]
-	userId = userId[1:]
-	userId = userId[:len(userId)-1]
-
-	// get user id
-	id, err := r.store.GetUser(gc, userId)
-	if err != nil {
-		return nil, fmt.Errorf("GetUser error in GetAllCollectionSearchResolver: %v", err)
-	}
-
-	args := db.GetAllCollectionsBySearchParams{
-		UserID:      id,
-		Username:    "%" + keyword + "%",
-		Code:        "%" + keyword + "%",
-		Description: "%" + keyword + "%",
-		Limit:       int32(limit),
-		Offset:      int32(skip),
-	}
-
-	fmt.Println(id)
-
-	// get all collection
-	collections, err := r.store.GetAllCollectionsBySearch(gc, args)
-	if err != nil {
-		return nil, fmt.Errorf("GetCollectionBySearchResolver error : %v", err)
-	}
-
-	convertCol := make([]*model.CodeWithCollectionID, len(collections))
-	for i, col := range collections {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(col.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
-		}
-		convertCol[i] = &model.CodeWithCollectionID{
-			ID:           string(fmt.Sprint(col.ID)),
-			Username:     col.Username,
-			Code:         col.Code,
-			Img:          string(col.Img),
-			Description:  col.Description,
-			Performance:  col.Performance,
-			Star:         int(star),
 			Tags:         col.Tags,
 			CreatedAt:    col.CreatedAt,
 			UpdatedAt:    col.UpdatedAt,

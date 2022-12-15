@@ -274,7 +274,7 @@ func (r *queryResolver) GetAllCollection(ctx context.Context, limit int, skip in
 	return res, nil
 }
 
-func (r *queryResolver) GetAllCollectionBySearch(ctx context.Context, keyword string, limit int, skip int) ([]*model.CodeWithCollectionID, error) {
+func (r *queryResolver) GetAllCollectionBySearch(ctx context.Context, keyword string, limit int, skip int) ([]*model.Code, error) {
 	res, err := r.GetAllCollectionBySearchResolver(ctx, keyword, limit, skip)
 	if err != nil {
 		return nil, fmt.Errorf("GetAllCollectionBySearch error: %v", err)

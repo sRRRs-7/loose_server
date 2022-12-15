@@ -96,11 +96,7 @@ type Code_with_CollectionId implements Node {
 }
 extend type Query {
   getAllCollection(limit: Int!, skip: Int!): [Code_with_CollectionId!]!
-  getAllCollectionBySearch(
-    keyword: String!
-    limit: Int!
-    skip: Int!
-  ): [Code_with_CollectionId!]!
+  getAllCollectionBySearch(keyword: String!, limit: Int!, skip: Int!): [Code!]!
 }
 extend type Mutation {
   createCollection(code_id: Int!): MutationResponse!
