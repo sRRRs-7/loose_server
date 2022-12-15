@@ -5,6 +5,9 @@ INSERT INTO collection (
     $1, $2
 );
 
+--name: GetCollectionPK : one
+SELECT * FROM collection
+WHERE user_id = $1 AND code_id = $2;
 
 -- name: GetCollection :one
 SELECT c.* FROM collection AS col

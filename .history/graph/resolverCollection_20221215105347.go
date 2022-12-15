@@ -117,6 +117,7 @@ func (r *mutationResolver) GetCollectionResolver(ctx context.Context, id int) (*
 		CreatedAt:   code.CreatedAt,
 		UpdatedAt:   code.UpdatedAt,
 		Access:      int(code.Access),
+		CollectionID: ,
 	}
 
 	return res, nil
@@ -176,14 +177,14 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 		return nil, fmt.Errorf("GetUser error in GetAllCollection: %v", err)
 	}
 
-	args := db.GetAllCollectionsParams{
+	args := db.ListCollectionsParams{
 		UserID: id,
 		Limit:  int32(limit),
 		Offset: int32(skip),
 	}
 
 	// get all collection
-	collections, err := r.store.GetAllCollections(gc, args)
+	collections, err := r.store.ListCollections(gc, args)
 	if err != nil {
 		return nil, fmt.Errorf("GetCollectionResolver error : %v", err)
 	}

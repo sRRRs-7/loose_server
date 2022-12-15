@@ -183,7 +183,7 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	}
 
 	// get all collection
-	collections, err := r.store.GetAllCollections(gc, args)
+	collections, err := r.store.ListCollections(gc, args)
 	if err != nil {
 		return nil, fmt.Errorf("GetCollectionResolver error : %v", err)
 	}

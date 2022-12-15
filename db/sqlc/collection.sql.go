@@ -38,6 +38,70 @@ func (q *Queries) DeleteCollection(ctx context.Context, id int64) error {
 	return err
 }
 
+const getAllCollections = `-- name: GetAllCollections :many
+SELECT c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access, col.id FROM collection AS col
+INNER JOIN users AS u ON col.user_id = u.id
+INNER JOIN codes AS c ON col.code_id = c.id
+WHERE col.user_id = $1
+ORDER BY created_at DESC
+LIMIT $2
+OFFSET $3
+`
+
+type GetAllCollectionsParams struct {
+	UserID int64 `json:"user_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+type GetAllCollectionsRow struct {
+	ID          int64     `json:"id"`
+	Username    string    `json:"username"`
+	Code        string    `json:"code"`
+	Img         []byte    `json:"img"`
+	Description string    `json:"description"`
+	Performance string    `json:"performance"`
+	Star        int64     `json:"star"`
+	Tags        []string  `json:"tags"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Access      int64     `json:"access"`
+	ID_2        int64     `json:"id_2"`
+}
+
+func (q *Queries) GetAllCollections(ctx context.Context, arg GetAllCollectionsParams) ([]*GetAllCollectionsRow, error) {
+	rows, err := q.db.Query(ctx, getAllCollections, arg.UserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*GetAllCollectionsRow{}
+	for rows.Next() {
+		var i GetAllCollectionsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Code,
+			&i.Img,
+			&i.Description,
+			&i.Performance,
+			&i.Star,
+			&i.Tags,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Access,
+			&i.ID_2,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCollection = `-- name: GetCollection :one
 SELECT c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access FROM collection AS col
 INNER JOIN users AS u ON col.user_id = u.id
@@ -62,68 +126,4 @@ func (q *Queries) GetCollection(ctx context.Context, id int64) (*Codes, error) {
 		&i.Access,
 	)
 	return &i, err
-}
-
-const listCollections = `-- name: ListCollections :many
-SELECT c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access, col.id FROM collection AS col
-INNER JOIN users AS u ON col.user_id = u.id
-INNER JOIN codes AS c ON col.code_id = c.id
-WHERE col.user_id = $1
-ORDER BY created_at DESC
-LIMIT $2
-OFFSET $3
-`
-
-type ListCollectionsParams struct {
-	UserID int64 `json:"user_id"`
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-type ListCollectionsRow struct {
-	ID          int64     `json:"id"`
-	Username    string    `json:"username"`
-	Code        string    `json:"code"`
-	Img         []byte    `json:"img"`
-	Description string    `json:"description"`
-	Performance string    `json:"performance"`
-	Star        int64     `json:"star"`
-	Tags        []string  `json:"tags"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Access      int64     `json:"access"`
-	ID_2        int64     `json:"id_2"`
-}
-
-func (q *Queries) ListCollections(ctx context.Context, arg ListCollectionsParams) ([]*ListCollectionsRow, error) {
-	rows, err := q.db.Query(ctx, listCollections, arg.UserID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []*ListCollectionsRow{}
-	for rows.Next() {
-		var i ListCollectionsRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Username,
-			&i.Code,
-			&i.Img,
-			&i.Description,
-			&i.Performance,
-			&i.Star,
-			&i.Tags,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Access,
-			&i.ID_2,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
