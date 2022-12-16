@@ -55,10 +55,6 @@ func playgroundHandler() gin.HandlerFunc {
 	h := playground.Handler("GraphQL", "/admin/query") // playground fetcher endpoint
 
 	return func(c *gin.Context) {
-		admin := c.MustGet(gin.AuthUserKey).(string)
-		if admin != "srrrs" {
-			return
-		}
 		h.ServeHTTP(c.Writer, c.Request)
 	}
 }

@@ -54,6 +54,14 @@ type Collection struct {
 
 func (Collection) IsNode() {}
 
+type LoginUserResponse struct {
+	ID       string `json:"id"`
+	Ok       bool   `json:"OK"`
+	Username string `json:"username"`
+}
+
+func (LoginUserResponse) IsNode() {}
+
 type Media struct {
 	ID        string    `json:"id"`
 	Title     string    `json:"title"`

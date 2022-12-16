@@ -81,6 +81,12 @@ type ComplexityRoot struct {
 		UserID func(childComplexity int) int
 	}
 
+	LoginUserResponse struct {
+		ID       func(childComplexity int) int
+		Ok       func(childComplexity int) int
+		Username func(childComplexity int) int
+	}
+
 	Media struct {
 		Contents  func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
@@ -96,7 +102,7 @@ type ComplexityRoot struct {
 		CreateAdminStar       func(childComplexity int, userID int, codeID int) int
 		CreateAdminToken      func(childComplexity int, username string) int
 		CreateAdminUser       func(childComplexity int, username string, password string) int
-		CreateCode            func(childComplexity int, username string, code string, img string, description string, performance string, star int, tags []string, access int) int
+		CreateCode            func(childComplexity int, code string, img string, description string, performance string, star int, tags []string, access int) int
 		CreateCollection      func(childComplexity int, codeID int) int
 		CreateMedia           func(childComplexity int, title string, contents string, img string) int
 		CreateStar            func(childComplexity int, codeID int) int
@@ -169,7 +175,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateAdminUser(ctx context.Context, username string, password string) (*model.MutationResponse, error)
 	GetAdminUser(ctx context.Context, username string, password string) (*model.AdminUserResponse, error)
-	CreateCode(ctx context.Context, username string, code string, img string, description string, performance string, star int, tags []string, access int) (*model.MutationResponse, error)
+	CreateCode(ctx context.Context, code string, img string, description string, performance string, star int, tags []string, access int) (*model.MutationResponse, error)
 	UpdateCodes(ctx context.Context, id int, code string, img string, description string, performance string, tags []string) (*model.MutationResponse, error)
 	GetCode(ctx context.Context, id int) (*model.Code, error)
 	UpdateAccess(ctx context.Context, id int, access int) (*model.MutationResponse, error)
@@ -188,7 +194,7 @@ type MutationResolver interface {
 	DeleteStar(ctx context.Context, userID int, codeID int) (*model.MutationResponse, error)
 	CreateUser(ctx context.Context, username string, password string, email string, sex string, dateOfBirth string) (*model.MutationResponse, error)
 	UpdateUser(ctx context.Context, username string, updateName string, email string) (*model.MutationResponse, error)
-	LoginUser(ctx context.Context, username string, password string) (bool, error)
+	LoginUser(ctx context.Context, username string, password string) (*model.LoginUserResponse, error)
 	GetUser(ctx context.Context, username string) (int, error)
 	DeleteUser(ctx context.Context, username string) (*model.MutationResponse, error)
 	CreateToken(ctx context.Context, username string) (string, error)
@@ -402,6 +408,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Collection.UserID(childComplexity), true
 
+	case "LoginUserResponse.id":
+		if e.complexity.LoginUserResponse.ID == nil {
+			break
+		}
+
+		return e.complexity.LoginUserResponse.ID(childComplexity), true
+
+	case "LoginUserResponse.OK":
+		if e.complexity.LoginUserResponse.Ok == nil {
+			break
+		}
+
+		return e.complexity.LoginUserResponse.Ok(childComplexity), true
+
+	case "LoginUserResponse.username":
+		if e.complexity.LoginUserResponse.Username == nil {
+			break
+		}
+
+		return e.complexity.LoginUserResponse.Username(childComplexity), true
+
 	case "Media.contents":
 		if e.complexity.Media.Contents == nil {
 			break
@@ -514,7 +541,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateCode(childComplexity, args["username"].(string), args["code"].(string), args["img"].(string), args["description"].(string), args["performance"].(string), args["star"].(int), args["tags"].([]string), args["access"].(int)), true
+		return e.complexity.Mutation.CreateCode(childComplexity, args["code"].(string), args["img"].(string), args["description"].(string), args["performance"].(string), args["star"].(int), args["tags"].([]string), args["access"].(int)), true
 
 	case "Mutation.createCollection":
 		if e.complexity.Mutation.CreateCollection == nil {
@@ -1113,7 +1140,6 @@ extend type Query {
 }
 extend type Mutation {
   createCode(
-    username: String!
     code: String!
     img: Byte!
     description: String!
@@ -1200,6 +1226,11 @@ type Star implements Node {
   user_id: Int!
   codes_id: Int!
 }
+type LoginUserResponse implements Node {
+  id: ID!
+  OK: Boolean!
+  username: String!
+}
 extend type Mutation {
   createStar(code_id: Int!): MutationResponse!
   createAdminStar(user_id: Int!, code_id: Int!): MutationResponse!
@@ -1231,7 +1262,7 @@ extend type Mutation {
     updateName: String!
     email: String!
   ): MutationResponse!
-  loginUser(username: String!, password: String!): Boolean!
+  loginUser(username: String!, password: String!): LoginUserResponse!
   getUser(username: String!): Int!
   deleteUser(username: String!): MutationResponse!
 }
@@ -1385,77 +1416,68 @@ func (ec *executionContext) field_Mutation_createCode_args(ctx context.Context, 
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["username"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+	if tmp, ok := rawArgs["code"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["username"] = arg0
+	args["code"] = arg0
 	var arg1 string
-	if tmp, ok := rawArgs["code"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["code"] = arg1
-	var arg2 string
 	if tmp, ok := rawArgs["img"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("img"))
-		arg2, err = ec.unmarshalNByte2string(ctx, tmp)
+		arg1, err = ec.unmarshalNByte2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["img"] = arg2
-	var arg3 string
+	args["img"] = arg1
+	var arg2 string
 	if tmp, ok := rawArgs["description"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["description"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["performance"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performance"))
 		arg3, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["description"] = arg3
-	var arg4 string
-	if tmp, ok := rawArgs["performance"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performance"))
-		arg4, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["performance"] = arg4
-	var arg5 int
+	args["performance"] = arg3
+	var arg4 int
 	if tmp, ok := rawArgs["star"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("star"))
-		arg5, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg4, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["star"] = arg5
-	var arg6 []string
+	args["star"] = arg4
+	var arg5 []string
 	if tmp, ok := rawArgs["tags"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
-		arg6, err = ec.unmarshalNString2ᚕstringᚄ(ctx, tmp)
+		arg5, err = ec.unmarshalNString2ᚕstringᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["tags"] = arg6
-	var arg7 int
+	args["tags"] = arg5
+	var arg6 int
 	if tmp, ok := rawArgs["access"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("access"))
-		arg7, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg6, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["access"] = arg7
+	args["access"] = arg6
 	return args, nil
 }
 
@@ -3364,6 +3386,138 @@ func (ec *executionContext) fieldContext_Collection_code_id(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _LoginUserResponse_id(ctx context.Context, field graphql.CollectedField, obj *model.LoginUserResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginUserResponse_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoginUserResponse_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoginUserResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoginUserResponse_OK(ctx context.Context, field graphql.CollectedField, obj *model.LoginUserResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginUserResponse_OK(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ok, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoginUserResponse_OK(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoginUserResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoginUserResponse_username(ctx context.Context, field graphql.CollectedField, obj *model.LoginUserResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginUserResponse_username(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Username, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoginUserResponse_username(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoginUserResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Media_id(ctx context.Context, field graphql.CollectedField, obj *model.Media) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Media_id(ctx, field)
 	if err != nil {
@@ -3768,7 +3922,7 @@ func (ec *executionContext) _Mutation_createCode(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateCode(rctx, fc.Args["username"].(string), fc.Args["code"].(string), fc.Args["img"].(string), fc.Args["description"].(string), fc.Args["performance"].(string), fc.Args["star"].(int), fc.Args["tags"].([]string), fc.Args["access"].(int))
+		return ec.resolvers.Mutation().CreateCode(rctx, fc.Args["code"].(string), fc.Args["img"].(string), fc.Args["description"].(string), fc.Args["performance"].(string), fc.Args["star"].(int), fc.Args["tags"].([]string), fc.Args["access"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5009,9 +5163,9 @@ func (ec *executionContext) _Mutation_loginUser(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*model.LoginUserResponse)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNLoginUserResponse2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐLoginUserResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5021,7 +5175,15 @@ func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_LoginUserResponse_id(ctx, field)
+			case "OK":
+				return ec.fieldContext_LoginUserResponse_OK(ctx, field)
+			case "username":
+				return ec.fieldContext_LoginUserResponse_username(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoginUserResponse", field.Name)
 		},
 	}
 	defer func() {
@@ -8731,6 +8893,13 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Star(ctx, sel, obj)
+	case model.LoginUserResponse:
+		return ec._LoginUserResponse(ctx, sel, &obj)
+	case *model.LoginUserResponse:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._LoginUserResponse(ctx, sel, obj)
 	case model.User:
 		return ec._User(ctx, sel, &obj)
 	case *model.User:
@@ -8984,6 +9153,48 @@ func (ec *executionContext) _Collection(ctx context.Context, sel ast.SelectionSe
 		case "code_id":
 
 			out.Values[i] = ec._Collection_code_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var loginUserResponseImplementors = []string{"LoginUserResponse", "Node"}
+
+func (ec *executionContext) _LoginUserResponse(ctx context.Context, sel ast.SelectionSet, obj *model.LoginUserResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, loginUserResponseImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LoginUserResponse")
+		case "id":
+
+			out.Values[i] = ec._LoginUserResponse_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "OK":
+
+			out.Values[i] = ec._LoginUserResponse_OK(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "username":
+
+			out.Values[i] = ec._LoginUserResponse_username(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -10289,6 +10500,20 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNLoginUserResponse2githubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐLoginUserResponse(ctx context.Context, sel ast.SelectionSet, v model.LoginUserResponse) graphql.Marshaler {
+	return ec._LoginUserResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNLoginUserResponse2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐLoginUserResponse(ctx context.Context, sel ast.SelectionSet, v *model.LoginUserResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._LoginUserResponse(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNMedia2githubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐMedia(ctx context.Context, sel ast.SelectionSet, v model.Media) graphql.Marshaler {

@@ -46,15 +46,15 @@ func (r *mutationResolver) CreateUserResolver(ctx context.Context, username stri
 	return res, nil
 }
 
-func (r *mutationResolver) LoginUserResolver(ctx context.Context, username string, password string) (bool, error) {
+func (r *mutationResolver) LoginUserResolver(ctx context.Context, username string, password string) (*model.LoginUserResponse, error) {
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
-		return false, fmt.Errorf("gin context convert error: %v", err)
+		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
 	hashPassword, err := cryptography.HashPassword(password)
 	if err != nil {
-		return false, fmt.Errorf("create user password encrypt error: %v", err)
+		return nil, fmt.Errorf("create user password encrypt error: %v", err)
 	}
 
 	args := db.LoginUserParams{
@@ -64,15 +64,20 @@ func (r *mutationResolver) LoginUserResolver(ctx context.Context, username strin
 
 	user, err := r.store.LoginUser(gc, args)
 	if err != nil {
-		return false, fmt.Errorf("auth user method cannot retrieve user from database : %v", err)
+		return nil, fmt.Errorf("auth user method cannot retrieve user from database : %v", err)
 	}
 
 	_, err = cryptography.VerifyHash(hashPassword, user.Password)
 	if err != nil {
-		return false, fmt.Errorf("auth user password verification error: %v", err)
+		return nil, fmt.Errorf("auth user password verification error: %v", err)
 	}
 
-	return true, nil
+	res := &model.LoginUserResponse{
+		Ok:       true,
+		Username: username,
+	}
+
+	return res, nil
 }
 
 func (r *mutationResolver) GetUserResolver(ctx context.Context, username string) (int, error) {

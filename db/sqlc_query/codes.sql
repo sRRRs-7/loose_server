@@ -44,13 +44,13 @@ OFFSET $5;
 
 -- name: GetAllCodesSortedStar :many
 SELECT c.* FROM codes AS c
-ORDER BY star DESC
+ORDER BY star ASC
 LIMIT $1
 OFFSET $2;
 
 -- name: GetAllCodesSortedAccess :many
 SELECT * FROM codes
-ORDER BY access DESC
+ORDER BY access ASC
 LIMIT $1
 OFFSET $2;
 

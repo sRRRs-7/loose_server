@@ -27,8 +27,8 @@ func (r *mutationResolver) GetAdminUser(ctx context.Context, username string, pa
 	return res, nil
 }
 
-func (r *mutationResolver) CreateCode(ctx context.Context, username string, code string, img string, description string, performance string, star int, tags []string, access int) (*model.MutationResponse, error) {
-	res, err := r.CreateCodeResolver(ctx, username, code, img, description, performance, star, tags, access)
+func (r *mutationResolver) CreateCode(ctx context.Context, code string, img string, description string, performance string, star int, tags []string, access int) (*model.MutationResponse, error) {
+	res, err := r.CreateCodeResolver(ctx, code, img, description, performance, star, tags, access)
 	if err != nil {
 		return nil, fmt.Errorf("CreateCode error: %v", err)
 	}
@@ -186,10 +186,10 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, username string, upda
 	return res, nil
 }
 
-func (r *mutationResolver) LoginUser(ctx context.Context, username string, password string) (bool, error) {
+func (r *mutationResolver) LoginUser(ctx context.Context, username string, password string) (*model.LoginUserResponse, error) {
 	res, err := r.LoginUserResolver(ctx, username, password)
 	if err != nil {
-		return false, fmt.Errorf("GetOrder error: %v", err)
+		return nil, fmt.Errorf("GetOrder error: %v", err)
 	}
 	return res, nil
 }

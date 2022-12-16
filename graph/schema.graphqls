@@ -52,7 +52,6 @@ extend type Query {
 }
 extend type Mutation {
   createCode(
-    username: String!
     code: String!
     img: Byte!
     description: String!
@@ -139,6 +138,11 @@ type Star implements Node {
   user_id: Int!
   codes_id: Int!
 }
+type LoginUserResponse implements Node {
+  id: ID!
+  OK: Boolean!
+  username: String!
+}
 extend type Mutation {
   createStar(code_id: Int!): MutationResponse!
   createAdminStar(user_id: Int!, code_id: Int!): MutationResponse!
@@ -170,7 +174,7 @@ extend type Mutation {
     updateName: String!
     email: String!
   ): MutationResponse!
-  loginUser(username: String!, password: String!): Boolean!
+  loginUser(username: String!, password: String!): LoginUserResponse!
   getUser(username: String!): Int!
   deleteUser(username: String!): MutationResponse!
 }

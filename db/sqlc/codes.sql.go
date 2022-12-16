@@ -238,7 +238,7 @@ func (q *Queries) GetAllCodesByTag(ctx context.Context, arg GetAllCodesByTagPara
 
 const getAllCodesSortedAccess = `-- name: GetAllCodesSortedAccess :many
 SELECT id, username, code, img, description, performance, star, tags, created_at, updated_at, access FROM codes
-ORDER BY access DESC
+ORDER BY access ASC
 LIMIT $1
 OFFSET $2
 `
@@ -282,7 +282,7 @@ func (q *Queries) GetAllCodesSortedAccess(ctx context.Context, arg GetAllCodesSo
 
 const getAllCodesSortedStar = `-- name: GetAllCodesSortedStar :many
 SELECT c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access FROM codes AS c
-ORDER BY star DESC
+ORDER BY star ASC
 LIMIT $1
 OFFSET $2
 `

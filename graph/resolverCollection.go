@@ -239,12 +239,12 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 	// string processing
 	s := strings.Split(redisValue.String(), ",")
 	s = strings.Split(s[1], ":")
-	userId := s[1]
-	userId = userId[1:]
-	userId = userId[:len(userId)-1]
+	username := s[1]
+	username = username[1:]
+	username = username[:len(username)-1]
 
 	// get user id
-	id, err := r.store.GetUser(gc, userId)
+	id, err := r.store.GetUser(gc, username)
 	if err != nil {
 		return nil, fmt.Errorf("GetUser error in GetAllCollectionSearchResolver: %v", err)
 	}

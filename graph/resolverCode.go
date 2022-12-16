@@ -6,8 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sRRRs-7/loose_style.git/cryptography"
 	db "github.com/sRRRs-7/loose_style.git/db/sqlc"
 	"github.com/sRRRs-7/loose_style.git/graph/model"
+	"github.com/sRRRs-7/loose_style.git/session.go"
 )
 
 type SortBy struct {
@@ -21,11 +23,33 @@ var EnumSort = SortBy{
 }
 
 // mutation
-func (r *mutationResolver) CreateCodeResolver(ctx context.Context, username string, code string, img string, description string, performance string, star int, tags []string, access int) (*model.MutationResponse, error) {
+func (r *mutationResolver) CreateCodeResolver(ctx context.Context, code string, img string, description string, performance string, star int, tags []string, access int) (*model.MutationResponse, error) {
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
+
+	// user id get from redis
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+	accessToken := fields[1]
+
+	key, err := cryptography.HashPassword(accessToken)
+	if err != nil {
+		return nil, fmt.Errorf("CreateCollectionResolver error: %v", err)
+	}
+
+	// redis value get
+	redisValue := session.GetRedis(gc, key)
+	if redisValue == nil {
+		return nil, fmt.Errorf("get all cart item error get redis value is nil : %v", err)
+	}
+	// string processing
+	s := strings.Split(redisValue.String(), ",")
+	s = strings.Split(s[1], ":")
+	username := s[1]
+	username = username[1:]
+	username = username[:len(username)-1]
 
 	// tags str convert lower case
 	tag := make([]string, len(tags))
