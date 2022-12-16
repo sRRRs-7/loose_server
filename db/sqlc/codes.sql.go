@@ -24,7 +24,7 @@ type CreateCodeParams struct {
 	Img         []byte    `json:"img"`
 	Description string    `json:"description"`
 	Performance string    `json:"performance"`
-	Star        int64     `json:"star"`
+	Star        []int64   `json:"star"`
 	Tags        []string  `json:"tags"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -238,7 +238,7 @@ func (q *Queries) GetAllCodesByTag(ctx context.Context, arg GetAllCodesByTagPara
 
 const getAllCodesSortedAccess = `-- name: GetAllCodesSortedAccess :many
 SELECT id, username, code, img, description, performance, star, tags, created_at, updated_at, access FROM codes
-ORDER BY access ASC
+ORDER BY access DESC
 LIMIT $1
 OFFSET $2
 `
@@ -281,8 +281,8 @@ func (q *Queries) GetAllCodesSortedAccess(ctx context.Context, arg GetAllCodesSo
 }
 
 const getAllCodesSortedStar = `-- name: GetAllCodesSortedStar :many
-SELECT c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access FROM codes AS c
-ORDER BY star ASC
+SELECT id, username, code, img, description, performance, star, tags, created_at, updated_at, access FROM codes
+ORDER BY array_length(star, 1) ASC
 LIMIT $1
 OFFSET $2
 `
@@ -405,8 +405,8 @@ WHERE id = $1
 `
 
 type UpdateStarParams struct {
-	ID   int64 `json:"id"`
-	Star int64 `json:"star"`
+	ID   int64   `json:"id"`
+	Star []int64 `json:"star"`
 }
 
 func (q *Queries) UpdateStar(ctx context.Context, arg UpdateStarParams) error {

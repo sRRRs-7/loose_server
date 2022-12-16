@@ -39,7 +39,7 @@ func (q *Queries) DeleteCollection(ctx context.Context, id int64) error {
 }
 
 const getAllCollections = `-- name: GetAllCollections :many
-SELECT DISTINCT c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access, col.id FROM collection AS col
+SELECT DISTINCT col.id, col.id, c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access FROM collection AS col
 INNER JOIN users AS u ON col.user_id = u.id
 INNER JOIN codes AS c ON col.code_id = c.id
 WHERE col.user_id = $1
@@ -56,17 +56,18 @@ type GetAllCollectionsParams struct {
 
 type GetAllCollectionsRow struct {
 	ID          int64     `json:"id"`
+	ID_2        int64     `json:"id_2"`
+	ID_3        int64     `json:"id_3"`
 	Username    string    `json:"username"`
 	Code        string    `json:"code"`
 	Img         []byte    `json:"img"`
 	Description string    `json:"description"`
 	Performance string    `json:"performance"`
-	Star        int64     `json:"star"`
+	Star        []int64   `json:"star"`
 	Tags        []string  `json:"tags"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	Access      int64     `json:"access"`
-	ID_2        int64     `json:"id_2"`
 }
 
 func (q *Queries) GetAllCollections(ctx context.Context, arg GetAllCollectionsParams) ([]*GetAllCollectionsRow, error) {
@@ -80,6 +81,8 @@ func (q *Queries) GetAllCollections(ctx context.Context, arg GetAllCollectionsPa
 		var i GetAllCollectionsRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.ID_2,
+			&i.ID_3,
 			&i.Username,
 			&i.Code,
 			&i.Img,
@@ -90,7 +93,6 @@ func (q *Queries) GetAllCollections(ctx context.Context, arg GetAllCollectionsPa
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Access,
-			&i.ID_2,
 		); err != nil {
 			return nil, err
 		}
@@ -103,7 +105,7 @@ func (q *Queries) GetAllCollections(ctx context.Context, arg GetAllCollectionsPa
 }
 
 const getAllCollectionsBySearch = `-- name: GetAllCollectionsBySearch :many
-SELECT DISTINCT c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access, col.id FROM collection AS col
+SELECT DISTINCT col.id, col.id, c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access FROM collection AS col
 INNER JOIN users AS u ON col.user_id = u.id
 INNER JOIN codes AS c ON col.code_id = c.id
 WHERE col.user_id = $1 AND
@@ -124,17 +126,18 @@ type GetAllCollectionsBySearchParams struct {
 
 type GetAllCollectionsBySearchRow struct {
 	ID          int64     `json:"id"`
+	ID_2        int64     `json:"id_2"`
+	ID_3        int64     `json:"id_3"`
 	Username    string    `json:"username"`
 	Code        string    `json:"code"`
 	Img         []byte    `json:"img"`
 	Description string    `json:"description"`
 	Performance string    `json:"performance"`
-	Star        int64     `json:"star"`
+	Star        []int64   `json:"star"`
 	Tags        []string  `json:"tags"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	Access      int64     `json:"access"`
-	ID_2        int64     `json:"id_2"`
 }
 
 func (q *Queries) GetAllCollectionsBySearch(ctx context.Context, arg GetAllCollectionsBySearchParams) ([]*GetAllCollectionsBySearchRow, error) {
@@ -155,6 +158,8 @@ func (q *Queries) GetAllCollectionsBySearch(ctx context.Context, arg GetAllColle
 		var i GetAllCollectionsBySearchRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.ID_2,
+			&i.ID_3,
 			&i.Username,
 			&i.Code,
 			&i.Img,
@@ -165,7 +170,6 @@ func (q *Queries) GetAllCollectionsBySearch(ctx context.Context, arg GetAllColle
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Access,
-			&i.ID_2,
 		); err != nil {
 			return nil, err
 		}

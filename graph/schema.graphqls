@@ -8,6 +8,15 @@ interface Node {
   id: ID!
 }
 
+enum SortBy {
+  ASC
+  DESC
+}
+
+scalar Time
+scalar UUID
+scalar Byte
+
 # admin user
 type adminUser implements Node {
   id: ID!
@@ -32,7 +41,7 @@ type Code implements Node {
   img: Byte!
   description: String!
   performance: String!
-  star: Int!
+  star: [Int!]!
   tags: [String!]!
   created_at: Time!
   updated_at: Time!
@@ -51,12 +60,22 @@ extend type Query {
   ): [Code!]!
 }
 extend type Mutation {
+  adminCreateCode(
+    username: String!
+    code: String!
+    img: Byte!
+    description: String!
+    performance: String!
+    star: [Int!]!
+    tags: [String!]!
+    access: Int!
+  ): MutationResponse!
   createCode(
     code: String!
     img: Byte!
     description: String!
     performance: String!
-    star: Int!
+    star: [Int!]!
     tags: [String!]!
     access: Int!
   ): MutationResponse!
@@ -69,6 +88,7 @@ extend type Mutation {
     tags: [String!]!
   ): MutationResponse!
   getCode(id: Int!): Code!
+  updateStar(code_id: Int!): MutationResponse!
   updateAccess(id: Int!, access: Int!): MutationResponse!
   deleteCode(id: Int!): MutationResponse!
 }
@@ -86,7 +106,7 @@ type Code_with_CollectionId implements Node {
   img: Byte!
   description: String!
   performance: String!
-  star: Int!
+  star: [Int!]!
   tags: [String!]!
   created_at: Time!
   updated_at: Time!
@@ -132,24 +152,6 @@ extend type Mutation {
   deleteMedia(id: Int!): MutationResponse!
 }
 
-# stars
-type Star implements Node {
-  id: ID!
-  user_id: Int!
-  codes_id: Int!
-}
-type LoginUserResponse implements Node {
-  id: ID!
-  OK: Boolean!
-  username: String!
-}
-extend type Mutation {
-  createStar(code_id: Int!): MutationResponse!
-  createAdminStar(user_id: Int!, code_id: Int!): MutationResponse!
-  countStar(code_id: Int!): Int!
-  deleteStar(user_id: Int!, code_id: Int!): MutationResponse!
-}
-
 # users
 type User implements Node {
   id: ID!
@@ -160,6 +162,12 @@ type User implements Node {
   date_of_birth: String!
   created_at: Time!
   updated_at: Time!
+}
+type LoginUserResponse implements Node {
+  id: ID!
+  user_id: Int!
+  OK: Boolean!
+  username: String!
 }
 extend type Mutation {
   createUser(
@@ -190,12 +198,3 @@ type MutationResponse implements Node {
   is_error: Boolean!
   message: String!
 }
-
-enum SortBy {
-  ASC
-  DESC
-}
-
-scalar Time
-scalar UUID
-scalar Byte

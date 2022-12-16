@@ -73,6 +73,7 @@ func (r *mutationResolver) LoginUserResolver(ctx context.Context, username strin
 	}
 
 	res := &model.LoginUserResponse{
+		UserID:   int(user.ID),
 		Ok:       true,
 		Username: username,
 	}

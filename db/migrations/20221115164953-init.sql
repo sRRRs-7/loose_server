@@ -10,20 +10,14 @@ CREATE TABLE "users" (
   "updated_at" timestamp NOT NULL
 );
 
-CREATE TABLE "stars" (
-  "id" bigserial PRIMARY KEY,
-  "user_id" bigint NOT NULL,
-  "code_id" bigint NOT NULL
-);
-
 CREATE TABLE "codes" (
   "id" bigserial PRIMARY KEY,
   "username" varchar NOT NULL,
   "code" text UNIQUE NOT NULL,
   "img" bytea NOT NULL,
   "description" text NOT NULL,
-  "performance" varchar NOT NULL DEFAULT 'none',
-  "star" bigint NOT NULL DEFAULT 0,
+  "performance" varchar NOT NULL,
+  "star" bigint[] NOT NULL,
   "tags" varchar[] NOT NULL,
   "created_at" timestamp NOT NULL,
   "updated_at" timestamp NOT NULL,
@@ -51,10 +45,6 @@ CREATE TABLE "adminuser" (
   "password" varchar UNIQUE NOT NULL,
   "created_at" timestamp NOT NULL
 );
-
-ALTER TABLE "stars" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
-
-ALTER TABLE "stars" ADD FOREIGN KEY ("code_id") REFERENCES "codes" ("id");
 
 ALTER TABLE "codes" ADD FOREIGN KEY ("username") REFERENCES "users" ("username");
 

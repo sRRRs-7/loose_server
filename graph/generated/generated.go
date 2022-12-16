@@ -84,6 +84,7 @@ type ComplexityRoot struct {
 	LoginUserResponse struct {
 		ID       func(childComplexity int) int
 		Ok       func(childComplexity int) int
+		UserID   func(childComplexity int) int
 		Username func(childComplexity int) int
 	}
 
@@ -97,21 +98,18 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CountStar             func(childComplexity int, codeID int) int
+		AdminCreateCode       func(childComplexity int, username string, code string, img string, description string, performance string, star []int, tags []string, access int) int
 		CreateAdminCollection func(childComplexity int, userID int, codeID int) int
-		CreateAdminStar       func(childComplexity int, userID int, codeID int) int
 		CreateAdminToken      func(childComplexity int, username string) int
 		CreateAdminUser       func(childComplexity int, username string, password string) int
-		CreateCode            func(childComplexity int, code string, img string, description string, performance string, star int, tags []string, access int) int
+		CreateCode            func(childComplexity int, code string, img string, description string, performance string, star []int, tags []string, access int) int
 		CreateCollection      func(childComplexity int, codeID int) int
 		CreateMedia           func(childComplexity int, title string, contents string, img string) int
-		CreateStar            func(childComplexity int, codeID int) int
 		CreateToken           func(childComplexity int, username string) int
 		CreateUser            func(childComplexity int, username string, password string, email string, sex string, dateOfBirth string) int
 		DeleteCode            func(childComplexity int, id int) int
 		DeleteCollection      func(childComplexity int, id int) int
 		DeleteMedia           func(childComplexity int, id int) int
-		DeleteStar            func(childComplexity int, userID int, codeID int) int
 		DeleteUser            func(childComplexity int, username string) int
 		GetAdminUser          func(childComplexity int, username string, password string) int
 		GetCode               func(childComplexity int, id int) int
@@ -122,6 +120,7 @@ type ComplexityRoot struct {
 		UpdateAccess          func(childComplexity int, id int, access int) int
 		UpdateCodes           func(childComplexity int, id int, code string, img string, description string, performance string, tags []string) int
 		UpdateMedia           func(childComplexity int, id string, title string, contents string, img string) int
+		UpdateStar            func(childComplexity int, codeID int) int
 		UpdateUser            func(childComplexity int, username string, updateName string, email string) int
 	}
 
@@ -140,12 +139,6 @@ type ComplexityRoot struct {
 		GetAllCollection         func(childComplexity int, limit int, skip int) int
 		GetAllCollectionBySearch func(childComplexity int, keyword string, limit int, skip int) int
 		GetAllMedia              func(childComplexity int, limit int, skip int) int
-	}
-
-	Star struct {
-		CodesID func(childComplexity int) int
-		ID      func(childComplexity int) int
-		UserID  func(childComplexity int) int
 	}
 
 	User struct {
@@ -175,9 +168,11 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateAdminUser(ctx context.Context, username string, password string) (*model.MutationResponse, error)
 	GetAdminUser(ctx context.Context, username string, password string) (*model.AdminUserResponse, error)
-	CreateCode(ctx context.Context, code string, img string, description string, performance string, star int, tags []string, access int) (*model.MutationResponse, error)
+	AdminCreateCode(ctx context.Context, username string, code string, img string, description string, performance string, star []int, tags []string, access int) (*model.MutationResponse, error)
+	CreateCode(ctx context.Context, code string, img string, description string, performance string, star []int, tags []string, access int) (*model.MutationResponse, error)
 	UpdateCodes(ctx context.Context, id int, code string, img string, description string, performance string, tags []string) (*model.MutationResponse, error)
 	GetCode(ctx context.Context, id int) (*model.Code, error)
+	UpdateStar(ctx context.Context, codeID int) (*model.MutationResponse, error)
 	UpdateAccess(ctx context.Context, id int, access int) (*model.MutationResponse, error)
 	DeleteCode(ctx context.Context, id int) (*model.MutationResponse, error)
 	CreateCollection(ctx context.Context, codeID int) (*model.MutationResponse, error)
@@ -188,10 +183,6 @@ type MutationResolver interface {
 	CreateMedia(ctx context.Context, title string, contents string, img string) (*model.MutationResponse, error)
 	GetMedia(ctx context.Context, id int) (*model.Media, error)
 	DeleteMedia(ctx context.Context, id int) (*model.MutationResponse, error)
-	CreateStar(ctx context.Context, codeID int) (*model.MutationResponse, error)
-	CreateAdminStar(ctx context.Context, userID int, codeID int) (*model.MutationResponse, error)
-	CountStar(ctx context.Context, codeID int) (int, error)
-	DeleteStar(ctx context.Context, userID int, codeID int) (*model.MutationResponse, error)
 	CreateUser(ctx context.Context, username string, password string, email string, sex string, dateOfBirth string) (*model.MutationResponse, error)
 	UpdateUser(ctx context.Context, username string, updateName string, email string) (*model.MutationResponse, error)
 	LoginUser(ctx context.Context, username string, password string) (*model.LoginUserResponse, error)
@@ -422,6 +413,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoginUserResponse.Ok(childComplexity), true
 
+	case "LoginUserResponse.user_id":
+		if e.complexity.LoginUserResponse.UserID == nil {
+			break
+		}
+
+		return e.complexity.LoginUserResponse.UserID(childComplexity), true
+
 	case "LoginUserResponse.username":
 		if e.complexity.LoginUserResponse.Username == nil {
 			break
@@ -471,17 +469,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Media.UpdatedAt(childComplexity), true
 
-	case "Mutation.countStar":
-		if e.complexity.Mutation.CountStar == nil {
+	case "Mutation.adminCreateCode":
+		if e.complexity.Mutation.AdminCreateCode == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_countStar_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_adminCreateCode_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CountStar(childComplexity, args["code_id"].(int)), true
+		return e.complexity.Mutation.AdminCreateCode(childComplexity, args["username"].(string), args["code"].(string), args["img"].(string), args["description"].(string), args["performance"].(string), args["star"].([]int), args["tags"].([]string), args["access"].(int)), true
 
 	case "Mutation.createAdminCollection":
 		if e.complexity.Mutation.CreateAdminCollection == nil {
@@ -494,18 +492,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateAdminCollection(childComplexity, args["user_id"].(int), args["code_id"].(int)), true
-
-	case "Mutation.createAdminStar":
-		if e.complexity.Mutation.CreateAdminStar == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createAdminStar_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateAdminStar(childComplexity, args["user_id"].(int), args["code_id"].(int)), true
 
 	case "Mutation.createAdminToken":
 		if e.complexity.Mutation.CreateAdminToken == nil {
@@ -541,7 +527,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateCode(childComplexity, args["code"].(string), args["img"].(string), args["description"].(string), args["performance"].(string), args["star"].(int), args["tags"].([]string), args["access"].(int)), true
+		return e.complexity.Mutation.CreateCode(childComplexity, args["code"].(string), args["img"].(string), args["description"].(string), args["performance"].(string), args["star"].([]int), args["tags"].([]string), args["access"].(int)), true
 
 	case "Mutation.createCollection":
 		if e.complexity.Mutation.CreateCollection == nil {
@@ -566,18 +552,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateMedia(childComplexity, args["title"].(string), args["contents"].(string), args["img"].(string)), true
-
-	case "Mutation.createStar":
-		if e.complexity.Mutation.CreateStar == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createStar_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateStar(childComplexity, args["code_id"].(int)), true
 
 	case "Mutation.createToken":
 		if e.complexity.Mutation.CreateToken == nil {
@@ -638,18 +612,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteMedia(childComplexity, args["id"].(int)), true
-
-	case "Mutation.deleteStar":
-		if e.complexity.Mutation.DeleteStar == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_deleteStar_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteStar(childComplexity, args["user_id"].(int), args["code_id"].(int)), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -770,6 +732,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateMedia(childComplexity, args["id"].(string), args["title"].(string), args["contents"].(string), args["img"].(string)), true
+
+	case "Mutation.updateStar":
+		if e.complexity.Mutation.UpdateStar == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateStar_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateStar(childComplexity, args["code_id"].(int)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -899,27 +873,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetAllMedia(childComplexity, args["limit"].(int), args["skip"].(int)), true
-
-	case "Star.codes_id":
-		if e.complexity.Star.CodesID == nil {
-			break
-		}
-
-		return e.complexity.Star.CodesID(childComplexity), true
-
-	case "Star.id":
-		if e.complexity.Star.ID == nil {
-			break
-		}
-
-		return e.complexity.Star.ID(childComplexity), true
-
-	case "Star.user_id":
-		if e.complexity.Star.UserID == nil {
-			break
-		}
-
-		return e.complexity.Star.UserID(childComplexity), true
 
 	case "User.created_at":
 		if e.complexity.User.CreatedAt == nil {
@@ -1096,6 +1049,15 @@ interface Node {
   id: ID!
 }
 
+enum SortBy {
+  ASC
+  DESC
+}
+
+scalar Time
+scalar UUID
+scalar Byte
+
 # admin user
 type adminUser implements Node {
   id: ID!
@@ -1120,7 +1082,7 @@ type Code implements Node {
   img: Byte!
   description: String!
   performance: String!
-  star: Int!
+  star: [Int!]!
   tags: [String!]!
   created_at: Time!
   updated_at: Time!
@@ -1139,12 +1101,22 @@ extend type Query {
   ): [Code!]!
 }
 extend type Mutation {
+  adminCreateCode(
+    username: String!
+    code: String!
+    img: Byte!
+    description: String!
+    performance: String!
+    star: [Int!]!
+    tags: [String!]!
+    access: Int!
+  ): MutationResponse!
   createCode(
     code: String!
     img: Byte!
     description: String!
     performance: String!
-    star: Int!
+    star: [Int!]!
     tags: [String!]!
     access: Int!
   ): MutationResponse!
@@ -1157,6 +1129,7 @@ extend type Mutation {
     tags: [String!]!
   ): MutationResponse!
   getCode(id: Int!): Code!
+  updateStar(code_id: Int!): MutationResponse!
   updateAccess(id: Int!, access: Int!): MutationResponse!
   deleteCode(id: Int!): MutationResponse!
 }
@@ -1174,7 +1147,7 @@ type Code_with_CollectionId implements Node {
   img: Byte!
   description: String!
   performance: String!
-  star: Int!
+  star: [Int!]!
   tags: [String!]!
   created_at: Time!
   updated_at: Time!
@@ -1220,24 +1193,6 @@ extend type Mutation {
   deleteMedia(id: Int!): MutationResponse!
 }
 
-# stars
-type Star implements Node {
-  id: ID!
-  user_id: Int!
-  codes_id: Int!
-}
-type LoginUserResponse implements Node {
-  id: ID!
-  OK: Boolean!
-  username: String!
-}
-extend type Mutation {
-  createStar(code_id: Int!): MutationResponse!
-  createAdminStar(user_id: Int!, code_id: Int!): MutationResponse!
-  countStar(code_id: Int!): Int!
-  deleteStar(user_id: Int!, code_id: Int!): MutationResponse!
-}
-
 # users
 type User implements Node {
   id: ID!
@@ -1248,6 +1203,12 @@ type User implements Node {
   date_of_birth: String!
   created_at: Time!
   updated_at: Time!
+}
+type LoginUserResponse implements Node {
+  id: ID!
+  user_id: Int!
+  OK: Boolean!
+  username: String!
 }
 extend type Mutation {
   createUser(
@@ -1278,15 +1239,6 @@ type MutationResponse implements Node {
   is_error: Boolean!
   message: String!
 }
-
-enum SortBy {
-  ASC
-  DESC
-}
-
-scalar Time
-scalar UUID
-scalar Byte
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -1310,46 +1262,85 @@ func (ec *executionContext) dir_validation_args(ctx context.Context, rawArgs map
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_countStar_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_adminCreateCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["code_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code_id"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["code_id"] = arg0
+	args["username"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["code"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["code"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["img"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("img"))
+		arg2, err = ec.unmarshalNByte2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["img"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["description"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["description"] = arg3
+	var arg4 string
+	if tmp, ok := rawArgs["performance"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performance"))
+		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["performance"] = arg4
+	var arg5 []int
+	if tmp, ok := rawArgs["star"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("star"))
+		arg5, err = ec.unmarshalNInt2ᚕintᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["star"] = arg5
+	var arg6 []string
+	if tmp, ok := rawArgs["tags"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+		arg6, err = ec.unmarshalNString2ᚕstringᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tags"] = arg6
+	var arg7 int
+	if tmp, ok := rawArgs["access"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("access"))
+		arg7, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["access"] = arg7
 	return args, nil
 }
 
 func (ec *executionContext) field_Mutation_createAdminCollection_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["user_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["user_id"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["code_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code_id"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["code_id"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_createAdminStar_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
@@ -1451,10 +1442,10 @@ func (ec *executionContext) field_Mutation_createCode_args(ctx context.Context, 
 		}
 	}
 	args["performance"] = arg3
-	var arg4 int
+	var arg4 []int
 	if tmp, ok := rawArgs["star"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("star"))
-		arg4, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg4, err = ec.unmarshalNInt2ᚕintᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1526,21 +1517,6 @@ func (ec *executionContext) field_Mutation_createMedia_args(ctx context.Context,
 		}
 	}
 	args["img"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_createStar_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["code_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code_id"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["code_id"] = arg0
 	return args, nil
 }
 
@@ -1652,30 +1628,6 @@ func (ec *executionContext) field_Mutation_deleteMedia_args(ctx context.Context,
 		}
 	}
 	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteStar_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["user_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["user_id"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["code_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code_id"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["code_id"] = arg1
 	return args, nil
 }
 
@@ -1925,6 +1877,21 @@ func (ec *executionContext) field_Mutation_updateMedia_args(ctx context.Context,
 		}
 	}
 	args["img"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateStar_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["code_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code_id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["code_id"] = arg0
 	return args, nil
 }
 
@@ -2532,9 +2499,9 @@ func (ec *executionContext) _Code_star(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.([]int)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2ᚕintᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Code_star(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3016,9 +2983,9 @@ func (ec *executionContext) _Code_with_CollectionId_star(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.([]int)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2ᚕintᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Code_with_CollectionId_star(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3425,6 +3392,50 @@ func (ec *executionContext) fieldContext_LoginUserResponse_id(ctx context.Contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoginUserResponse_user_id(ctx context.Context, field graphql.CollectedField, obj *model.LoginUserResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginUserResponse_user_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoginUserResponse_user_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoginUserResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3908,6 +3919,69 @@ func (ec *executionContext) fieldContext_Mutation_getAdminUser(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_adminCreateCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_adminCreateCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AdminCreateCode(rctx, fc.Args["username"].(string), fc.Args["code"].(string), fc.Args["img"].(string), fc.Args["description"].(string), fc.Args["performance"].(string), fc.Args["star"].([]int), fc.Args["tags"].([]string), fc.Args["access"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.MutationResponse)
+	fc.Result = res
+	return ec.marshalNMutationResponse2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐMutationResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_adminCreateCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_MutationResponse_id(ctx, field)
+			case "is_error":
+				return ec.fieldContext_MutationResponse_is_error(ctx, field)
+			case "message":
+				return ec.fieldContext_MutationResponse_message(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MutationResponse", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_adminCreateCode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createCode(ctx, field)
 	if err != nil {
@@ -3922,7 +3996,7 @@ func (ec *executionContext) _Mutation_createCode(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateCode(rctx, fc.Args["code"].(string), fc.Args["img"].(string), fc.Args["description"].(string), fc.Args["performance"].(string), fc.Args["star"].(int), fc.Args["tags"].([]string), fc.Args["access"].(int))
+		return ec.resolvers.Mutation().CreateCode(rctx, fc.Args["code"].(string), fc.Args["img"].(string), fc.Args["description"].(string), fc.Args["performance"].(string), fc.Args["star"].([]int), fc.Args["tags"].([]string), fc.Args["access"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4107,6 +4181,69 @@ func (ec *executionContext) fieldContext_Mutation_getCode(ctx context.Context, f
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_getCode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateStar(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateStar(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateStar(rctx, fc.Args["code_id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.MutationResponse)
+	fc.Result = res
+	return ec.marshalNMutationResponse2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐMutationResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateStar(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_MutationResponse_id(ctx, field)
+			case "is_error":
+				return ec.fieldContext_MutationResponse_is_error(ctx, field)
+			case "message":
+				return ec.fieldContext_MutationResponse_message(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MutationResponse", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateStar_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4767,250 +4904,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteMedia(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_createStar(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createStar(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateStar(rctx, fc.Args["code_id"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.MutationResponse)
-	fc.Result = res
-	return ec.marshalNMutationResponse2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐMutationResponse(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_createStar(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_MutationResponse_id(ctx, field)
-			case "is_error":
-				return ec.fieldContext_MutationResponse_is_error(ctx, field)
-			case "message":
-				return ec.fieldContext_MutationResponse_message(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type MutationResponse", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createStar_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_createAdminStar(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createAdminStar(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateAdminStar(rctx, fc.Args["user_id"].(int), fc.Args["code_id"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.MutationResponse)
-	fc.Result = res
-	return ec.marshalNMutationResponse2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐMutationResponse(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_createAdminStar(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_MutationResponse_id(ctx, field)
-			case "is_error":
-				return ec.fieldContext_MutationResponse_is_error(ctx, field)
-			case "message":
-				return ec.fieldContext_MutationResponse_message(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type MutationResponse", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createAdminStar_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_countStar(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_countStar(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CountStar(rctx, fc.Args["code_id"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_countStar(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_countStar_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_deleteStar(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_deleteStar(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteStar(rctx, fc.Args["user_id"].(int), fc.Args["code_id"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.MutationResponse)
-	fc.Result = res
-	return ec.marshalNMutationResponse2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐMutationResponse(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_deleteStar(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_MutationResponse_id(ctx, field)
-			case "is_error":
-				return ec.fieldContext_MutationResponse_is_error(ctx, field)
-			case "message":
-				return ec.fieldContext_MutationResponse_message(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type MutationResponse", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteStar_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createUser(ctx, field)
 	if err != nil {
@@ -5178,6 +5071,8 @@ func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context,
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_LoginUserResponse_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_LoginUserResponse_user_id(ctx, field)
 			case "OK":
 				return ec.fieldContext_LoginUserResponse_OK(ctx, field)
 			case "username":
@@ -6310,138 +6205,6 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Star_id(ctx context.Context, field graphql.CollectedField, obj *model.Star) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Star_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Star_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Star",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Star_user_id(ctx context.Context, field graphql.CollectedField, obj *model.Star) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Star_user_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UserID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Star_user_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Star",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Star_codes_id(ctx context.Context, field graphql.CollectedField, obj *model.Star) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Star_codes_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CodesID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Star_codes_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Star",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8886,20 +8649,6 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Media(ctx, sel, obj)
-	case model.Star:
-		return ec._Star(ctx, sel, &obj)
-	case *model.Star:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Star(ctx, sel, obj)
-	case model.LoginUserResponse:
-		return ec._LoginUserResponse(ctx, sel, &obj)
-	case *model.LoginUserResponse:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._LoginUserResponse(ctx, sel, obj)
 	case model.User:
 		return ec._User(ctx, sel, &obj)
 	case *model.User:
@@ -8907,6 +8656,13 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._User(ctx, sel, obj)
+	case model.LoginUserResponse:
+		return ec._LoginUserResponse(ctx, sel, &obj)
+	case *model.LoginUserResponse:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._LoginUserResponse(ctx, sel, obj)
 	case model.MutationResponse:
 		return ec._MutationResponse(ctx, sel, &obj)
 	case *model.MutationResponse:
@@ -9185,6 +8941,13 @@ func (ec *executionContext) _LoginUserResponse(ctx context.Context, sel ast.Sele
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "user_id":
+
+			out.Values[i] = ec._LoginUserResponse_user_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "OK":
 
 			out.Values[i] = ec._LoginUserResponse_OK(ctx, field, obj)
@@ -9310,6 +9073,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "adminCreateCode":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_adminCreateCode(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createCode":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -9332,6 +9104,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_getCode(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateStar":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateStar(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -9422,42 +9203,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteMedia(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "createStar":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createStar(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "createAdminStar":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createAdminStar(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "countStar":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_countStar(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "deleteStar":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteStar(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -9794,48 +9539,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				return ec._Query___schema(ctx, field)
 			})
 
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var starImplementors = []string{"Star", "Node"}
-
-func (ec *executionContext) _Star(ctx context.Context, sel ast.SelectionSet, obj *model.Star) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, starImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Star")
-		case "id":
-
-			out.Values[i] = ec._Star_id(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "user_id":
-
-			out.Values[i] = ec._Star_user_id(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "codes_id":
-
-			out.Values[i] = ec._Star_codes_id(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10500,6 +10203,38 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNLoginUserResponse2githubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐLoginUserResponse(ctx context.Context, sel ast.SelectionSet, v model.LoginUserResponse) graphql.Marshaler {

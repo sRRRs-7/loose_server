@@ -22,7 +22,7 @@ type Codes struct {
 	Img         []byte    `json:"img"`
 	Description string    `json:"description"`
 	Performance string    `json:"performance"`
-	Star        int64     `json:"star"`
+	Star        []int64   `json:"star"`
 	Tags        []string  `json:"tags"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -42,12 +42,6 @@ type Media struct {
 	Img       []byte    `json:"img"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type Stars struct {
-	ID     int64 `json:"id"`
-	UserID int64 `json:"user_id"`
-	CodeID int64 `json:"code_id"`
 }
 
 type Users struct {

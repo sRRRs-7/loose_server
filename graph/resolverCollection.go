@@ -100,9 +100,10 @@ func (r *mutationResolver) GetCollectionResolver(ctx context.Context, id int) (*
 		return nil, fmt.Errorf("GetCollectionResolver error : %v", err)
 	}
 
-	star, err := r.store.CountStar(gc, int64(id))
-	if err != nil {
-		return nil, fmt.Errorf(" get CountStar error in GetCollection resolver : %v", err)
+	stars := make([]int, len(code.Star))
+	for i := range code.Star {
+		num := code.Star[i]
+		stars[i] = int(num)
 	}
 
 	res := &model.CodeWithCollectionID{
@@ -112,7 +113,7 @@ func (r *mutationResolver) GetCollectionResolver(ctx context.Context, id int) (*
 		Img:         string(code.Img),
 		Description: code.Description,
 		Performance: code.Performance,
-		Star:        int(star),
+		Star:        stars,
 		Tags:        code.Tags,
 		CreatedAt:   code.CreatedAt,
 		UpdatedAt:   code.UpdatedAt,
@@ -191,10 +192,10 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 
 	convertCol := make([]*model.CodeWithCollectionID, len(collections))
 	for i, col := range collections {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(col.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
+		stars := make([]int, len(col.Star))
+		for i := range col.Star {
+			num := col.Star[i]
+			stars[i] = int(num)
 		}
 		convertCol[i] = &model.CodeWithCollectionID{
 			ID:           string(fmt.Sprint(col.ID)),
@@ -203,7 +204,7 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 			Img:          string(col.Img),
 			Description:  col.Description,
 			Performance:  col.Performance,
-			Star:         int(star),
+			Star:         stars,
 			Tags:         col.Tags,
 			CreatedAt:    col.CreatedAt,
 			UpdatedAt:    col.UpdatedAt,
@@ -268,10 +269,10 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 
 	convertCol := make([]*model.CodeWithCollectionID, len(collections))
 	for i, col := range collections {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(col.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
+		stars := make([]int, len(col.Star))
+		for i := range col.Star {
+			num := col.Star[i]
+			stars[i] = int(num)
 		}
 		convertCol[i] = &model.CodeWithCollectionID{
 			ID:           string(fmt.Sprint(col.ID)),
@@ -280,7 +281,7 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 			Img:          string(col.Img),
 			Description:  col.Description,
 			Performance:  col.Performance,
-			Star:         int(star),
+			Star:         stars,
 			Tags:         col.Tags,
 			CreatedAt:    col.CreatedAt,
 			UpdatedAt:    col.UpdatedAt,

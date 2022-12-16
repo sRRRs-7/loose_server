@@ -10,6 +10,7 @@ import (
 	db "github.com/sRRRs-7/loose_style.git/db/sqlc"
 	"github.com/sRRRs-7/loose_style.git/graph/model"
 	"github.com/sRRRs-7/loose_style.git/session.go"
+	"github.com/sRRRs-7/loose_style.git/utils"
 )
 
 type SortBy struct {
@@ -22,8 +23,52 @@ var EnumSort = SortBy{
 	Desc: "DESC",
 }
 
+func (r *mutationResolver) AdminCreateCodeResolver(ctx context.Context, username string, code string, img string, description string, performance string, star []int, tags []string, access int) (*model.MutationResponse, error) {
+	gc, err := GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	// tags str convert lower case
+	tag := make([]string, len(tags))
+	for i, t := range tags {
+		tag[i] = strings.ToLower(t)
+	}
+
+	stars := make([]int64, len(star))
+	for i := range star {
+		num := star[i]
+		stars[i] = int64(num)
+	}
+
+	args := db.CreateCodeParams{
+		Username:    username,
+		Code:        code,
+		Img:         []byte(img),
+		Description: description,
+		Performance: performance,
+		Star:        stars,
+		Tags:        tag,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+		Access:      int64(access),
+	}
+
+	err = r.store.CreateCode(gc, args)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create code: %v", err)
+	}
+
+	res := &model.MutationResponse{
+		IsError: false,
+		Message: "crete a code OK",
+	}
+
+	return res, nil
+}
+
 // mutation
-func (r *mutationResolver) CreateCodeResolver(ctx context.Context, code string, img string, description string, performance string, star int, tags []string, access int) (*model.MutationResponse, error) {
+func (r *mutationResolver) CreateCodeResolver(ctx context.Context, code string, img string, description string, performance string, star []int, tags []string, access int) (*model.MutationResponse, error) {
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
@@ -45,16 +90,18 @@ func (r *mutationResolver) CreateCodeResolver(ctx context.Context, code string, 
 		return nil, fmt.Errorf("get all cart item error get redis value is nil : %v", err)
 	}
 	// string processing
-	s := strings.Split(redisValue.String(), ",")
-	s = strings.Split(s[1], ":")
-	username := s[1]
-	username = username[1:]
-	username = username[:len(username)-1]
+	username := utils.GetUsername(redisValue)
 
 	// tags str convert lower case
 	tag := make([]string, len(tags))
 	for i, t := range tags {
 		tag[i] = strings.ToLower(t)
+	}
+
+	stars := make([]int64, len(star))
+	for i := range star {
+		num := star[i]
+		stars[i] = int64(num)
 	}
 
 	args := db.CreateCodeParams{
@@ -63,7 +110,7 @@ func (r *mutationResolver) CreateCodeResolver(ctx context.Context, code string, 
 		Img:         []byte(img),
 		Description: description,
 		Performance: performance,
-		Star:        int64(star),
+		Star:        stars,
 		Tags:        tag,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -113,11 +160,6 @@ func (r *mutationResolver) UpdateCodesResolver(ctx context.Context, id int, code
 }
 
 func (r *mutationResolver) UpdateAccessResolver(ctx context.Context, id, access int) (*model.MutationResponse, error) {
-	res := &model.MutationResponse{
-		IsError: false,
-		Message: "update a code access count OK",
-	}
-
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
@@ -136,6 +178,68 @@ func (r *mutationResolver) UpdateAccessResolver(ctx context.Context, id, access 
 	err = r.store.UpdateAccess(gc, args)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update a code access count : %v", err)
+	}
+
+	res := &model.MutationResponse{
+		IsError: false,
+		Message: "update a code access count OK",
+	}
+
+	return res, nil
+}
+
+func (r *mutationResolver) UpdateStarResolver(ctx context.Context, codeID int) (*model.MutationResponse, error) {
+	gc, err := GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+	accessToken := fields[1]
+
+	key, err := cryptography.HashPassword(accessToken)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateStarResolver error: %v", err)
+	}
+
+	// redis value get
+	redisValue := session.GetRedis(gc, key)
+	if redisValue == nil {
+		return nil, fmt.Errorf("UpdateStarResolver error in get redis value : %v", err)
+	}
+
+	// string processing
+	username := utils.GetUsername(redisValue)
+
+	// get user id
+	user_id, err := r.store.GetUser(gc, username)
+	if err != nil {
+		return nil, fmt.Errorf("GetUser error in UpdateStarResolver: %v", err)
+	}
+
+	code, err := r.store.GetCode(gc, int64(codeID))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get code error in UpdateStarResolver: %v", err)
+	}
+
+	stars := utils.StarContains(code.Star, user_id)
+
+	args := db.UpdateStarParams{
+		ID:   int64(codeID),
+		Star: stars,
+	}
+
+	fmt.Println(codeID)
+
+	err = r.store.UpdateStar(gc, args)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update a star : %v", err)
+	}
+
+	res := &model.MutationResponse{
+		IsError: false,
+		Message: "update a star OK",
 	}
 
 	return res, nil
@@ -171,10 +275,10 @@ func (r *mutationResolver) GetCodeResolver(ctx context.Context, id int) (*model.
 		return nil, fmt.Errorf("failed to GetCode: %v", err)
 	}
 
-	// get star count
-	star, err := r.store.CountStar(gc, int64(id))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get CountStar: %v", err)
+	stars := make([]int, len(code.Star))
+	for i := range code.Star {
+		num := code.Star[i]
+		stars[i] = int(num)
 	}
 
 	res := &model.Code{
@@ -184,7 +288,7 @@ func (r *mutationResolver) GetCodeResolver(ctx context.Context, id int) (*model.
 		Img:         string(code.Img),
 		Description: code.Description,
 		Performance: code.Performance,
-		Star:        int(star),
+		Star:        stars,
 		Tags:        code.Tags,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -239,10 +343,10 @@ func (r *queryResolver) GetAllCodesByTagResolver(ctx context.Context, tags []*st
 
 	list := make([]*model.Code, len(codes))
 	for i, c := range codes {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(c.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
+		stars := make([]int, len(c.Star))
+		for i := range c.Star {
+			num := c.Star[i]
+			stars[i] = int(num)
 		}
 		list[i] = &model.Code{
 			ID:          string(fmt.Sprint(c.ID)),
@@ -251,7 +355,7 @@ func (r *queryResolver) GetAllCodesByTagResolver(ctx context.Context, tags []*st
 			Img:         string(c.Img),
 			Description: c.Description,
 			Performance: c.Performance,
-			Star:        int(star),
+			Star:        stars,
 			Tags:        c.Tags,
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
@@ -283,10 +387,10 @@ func (r *queryResolver) GetAllCodesByKeywordResolver(ctx context.Context, keywor
 
 	list := make([]*model.Code, len(codes))
 	for i, c := range codes {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(c.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
+		stars := make([]int, len(c.Star))
+		for i := range c.Star {
+			num := c.Star[i]
+			stars[i] = int(num)
 		}
 		list[i] = &model.Code{
 			ID:          string(fmt.Sprint(c.ID)),
@@ -295,7 +399,7 @@ func (r *queryResolver) GetAllCodesByKeywordResolver(ctx context.Context, keywor
 			Img:         string(c.Img),
 			Description: c.Description,
 			Performance: c.Performance,
-			Star:        int(star),
+			Star:        stars,
 			Tags:        c.Tags,
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
@@ -324,10 +428,10 @@ func (r *queryResolver) GetAllCodesSortedStarResolver(ctx context.Context, limit
 
 	list := make([]*model.Code, len(codes))
 	for i, c := range codes {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(c.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
+		stars := make([]int, len(c.Star))
+		for i := range c.Star {
+			num := c.Star[i]
+			stars[i] = int(num)
 		}
 		list[i] = &model.Code{
 			ID:          string(fmt.Sprint(c.ID)),
@@ -336,7 +440,7 @@ func (r *queryResolver) GetAllCodesSortedStarResolver(ctx context.Context, limit
 			Img:         string(c.Img),
 			Description: c.Description,
 			Performance: c.Performance,
-			Star:        int(star),
+			Star:        stars,
 			Tags:        c.Tags,
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
@@ -365,10 +469,10 @@ func (r *queryResolver) GetAllCodesSortedAccessResolver(ctx context.Context, lim
 
 	list := make([]*model.Code, len(codes))
 	for i, c := range codes {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(c.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar: %v", err)
+		stars := make([]int, len(c.Star))
+		for i := range c.Star {
+			num := c.Star[i]
+			stars[i] = int(num)
 		}
 		list[i] = &model.Code{
 			ID:          string(fmt.Sprint(c.ID)),
@@ -377,7 +481,7 @@ func (r *queryResolver) GetAllCodesSortedAccessResolver(ctx context.Context, lim
 			Img:         string(c.Img),
 			Description: c.Description,
 			Performance: c.Performance,
-			Star:        int(star),
+			Star:        stars,
 			Tags:        c.Tags,
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
@@ -407,10 +511,10 @@ func (r *queryResolver) GetAllCodesResolver(ctx context.Context, limit int, skip
 
 	list := make([]*model.Code, len(codes))
 	for i, c := range codes {
-		// get star count
-		star, err := r.store.CountStar(gc, int64(c.ID))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get CountStar in GetAllCodesResolver: %v", err)
+		stars := make([]int, len(c.Star))
+		for i := range c.Star {
+			num := c.Star[i]
+			stars[i] = int(num)
 		}
 		list[i] = &model.Code{
 			ID:          string(fmt.Sprint(c.ID)),
@@ -419,7 +523,7 @@ func (r *queryResolver) GetAllCodesResolver(ctx context.Context, limit int, skip
 			Img:         string(c.Img),
 			Description: c.Description,
 			Performance: c.Performance,
-			Star:        int(star),
+			Star:        stars,
 			Tags:        c.Tags,
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,

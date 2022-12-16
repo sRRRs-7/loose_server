@@ -20,7 +20,7 @@ type Code struct {
 	Img         string    `json:"img"`
 	Description string    `json:"description"`
 	Performance string    `json:"performance"`
-	Star        int       `json:"star"`
+	Star        []int     `json:"star"`
 	Tags        []string  `json:"tags"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -36,7 +36,7 @@ type CodeWithCollectionID struct {
 	Img          string    `json:"img"`
 	Description  string    `json:"description"`
 	Performance  string    `json:"performance"`
-	Star         int       `json:"star"`
+	Star         []int     `json:"star"`
 	Tags         []string  `json:"tags"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
@@ -56,6 +56,7 @@ func (Collection) IsNode() {}
 
 type LoginUserResponse struct {
 	ID       string `json:"id"`
+	UserID   int    `json:"user_id"`
 	Ok       bool   `json:"OK"`
 	Username string `json:"username"`
 }
@@ -80,14 +81,6 @@ type MutationResponse struct {
 }
 
 func (MutationResponse) IsNode() {}
-
-type Star struct {
-	ID      string `json:"id"`
-	UserID  int    `json:"user_id"`
-	CodesID int    `json:"codes_id"`
-}
-
-func (Star) IsNode() {}
 
 type User struct {
 	ID          string    `json:"id"`

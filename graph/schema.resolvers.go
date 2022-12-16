@@ -27,7 +27,15 @@ func (r *mutationResolver) GetAdminUser(ctx context.Context, username string, pa
 	return res, nil
 }
 
-func (r *mutationResolver) CreateCode(ctx context.Context, code string, img string, description string, performance string, star int, tags []string, access int) (*model.MutationResponse, error) {
+func (r *mutationResolver) AdminCreateCode(ctx context.Context, username string, code string, img string, description string, performance string, star []int, tags []string, access int) (*model.MutationResponse, error) {
+	res, err := r.AdminCreateCodeResolver(ctx, username, code, img, description, performance, star, tags, access)
+	if err != nil {
+		return nil, fmt.Errorf("CreateCode error: %v", err)
+	}
+	return res, nil
+}
+
+func (r *mutationResolver) CreateCode(ctx context.Context, code string, img string, description string, performance string, star []int, tags []string, access int) (*model.MutationResponse, error) {
 	res, err := r.CreateCodeResolver(ctx, code, img, description, performance, star, tags, access)
 	if err != nil {
 		return nil, fmt.Errorf("CreateCode error: %v", err)
@@ -47,6 +55,14 @@ func (r *mutationResolver) GetCode(ctx context.Context, id int) (*model.Code, er
 	res, err := r.GetCodeResolver(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("GetCode error: %v", err)
+	}
+	return res, nil
+}
+
+func (r *mutationResolver) UpdateStar(ctx context.Context, codeID int) (*model.MutationResponse, error) {
+	res, err := r.UpdateStarResolver(ctx, codeID)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateAccess error: %v", err)
 	}
 	return res, nil
 }
@@ -127,38 +143,6 @@ func (r *mutationResolver) DeleteMedia(ctx context.Context, id int) (*model.Muta
 	res, err := r.DeleteMediaResolver(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("DeleteMedia error: %v", err)
-	}
-	return res, nil
-}
-
-func (r *mutationResolver) CreateStar(ctx context.Context, codeID int) (*model.MutationResponse, error) {
-	res, err := r.CreateStarResolver(ctx, codeID)
-	if err != nil {
-		return nil, fmt.Errorf("CreateStar error: %v", err)
-	}
-	return res, nil
-}
-
-func (r *mutationResolver) CreateAdminStar(ctx context.Context, userID int, codeID int) (*model.MutationResponse, error) {
-	res, err := r.CreateAdminStarResolver(ctx, userID, codeID)
-	if err != nil {
-		return nil, fmt.Errorf("CreateStar error: %v", err)
-	}
-	return res, nil
-}
-
-func (r *mutationResolver) CountStar(ctx context.Context, codeID int) (int, error) {
-	res, err := r.CountStarResolver(ctx, codeID)
-	if err != nil {
-		return 0, fmt.Errorf("CountStar error: %v", err)
-	}
-	return res, nil
-}
-
-func (r *mutationResolver) DeleteStar(ctx context.Context, userID int, codeID int) (*model.MutationResponse, error) {
-	res, err := r.DeleteStarResolver(ctx, userID, codeID)
-	if err != nil {
-		return nil, fmt.Errorf("DeleteStar error: %v", err)
 	}
 	return res, nil
 }

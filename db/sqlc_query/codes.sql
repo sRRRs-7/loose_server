@@ -43,14 +43,14 @@ LIMIT $4
 OFFSET $5;
 
 -- name: GetAllCodesSortedStar :many
-SELECT c.* FROM codes AS c
-ORDER BY star ASC
+SELECT * FROM codes
+ORDER BY array_length(star, 1) ASC
 LIMIT $1
 OFFSET $2;
 
 -- name: GetAllCodesSortedAccess :many
 SELECT * FROM codes
-ORDER BY access ASC
+ORDER BY access DESC
 LIMIT $1
 OFFSET $2;
 

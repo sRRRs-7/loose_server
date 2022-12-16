@@ -14,7 +14,6 @@ mecab
 hebon
 
 update access transaction sqlc
-update star transaction sqlc
 
 HTTPS + TOKEN + FORM auth
 

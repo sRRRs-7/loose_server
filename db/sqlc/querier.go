@@ -9,17 +9,14 @@ import (
 )
 
 type Querier interface {
-	CountStar(ctx context.Context, codeID int64) (int64, error)
 	CreateAdminUser(ctx context.Context, arg CreateAdminUserParams) error
 	CreateCode(ctx context.Context, arg CreateCodeParams) error
 	CreateCollection(ctx context.Context, arg CreateCollectionParams) error
 	CreateMedia(ctx context.Context, arg CreateMediaParams) error
-	CreateStar(ctx context.Context, arg CreateStarParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) error
 	DeleteCode(ctx context.Context, id int64) error
 	DeleteCollection(ctx context.Context, id int64) error
 	DeleteMedia(ctx context.Context, id int64) error
-	DeleteStar(ctx context.Context, arg DeleteStarParams) error
 	DeleteUser(ctx context.Context, id int64) error
 	GetAdminUser(ctx context.Context, arg GetAdminUserParams) (*Adminuser, error)
 	GetAllCodes(ctx context.Context, arg GetAllCodesParams) ([]*Codes, error)
