@@ -213,7 +213,7 @@ func (r *mutationResolver) UpdateStarResolver(ctx context.Context, codeID int) (
 	username := utils.GetUsername(redisValue)
 
 	// get user id
-	user_id, err := r.store.GetUser(gc, username)
+	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
 		return nil, fmt.Errorf("GetUser error in UpdateStarResolver: %v", err)
 	}
@@ -223,14 +223,12 @@ func (r *mutationResolver) UpdateStarResolver(ctx context.Context, codeID int) (
 		return nil, fmt.Errorf("failed to get code error in UpdateStarResolver: %v", err)
 	}
 
-	stars := utils.StarContains(code.Star, user_id)
+	stars := utils.StarContains(code.Star, user.ID)
 
 	args := db.UpdateStarParams{
 		ID:   int64(codeID),
 		Star: stars,
 	}
-
-	fmt.Println(codeID)
 
 	err = r.store.UpdateStar(gc, args)
 	if err != nil {
@@ -465,6 +463,53 @@ func (r *queryResolver) GetAllCodesSortedAccessResolver(ctx context.Context, lim
 	codes, err := r.store.GetAllCodesSortedAccess(gc, args)
 	if err != nil {
 		return nil, fmt.Errorf("GetAllCodesSortedAccessResolver failed : %v", err)
+	}
+
+	list := make([]*model.Code, len(codes))
+	for i, c := range codes {
+		stars := make([]int, len(c.Star))
+		for i := range c.Star {
+			num := c.Star[i]
+			stars[i] = int(num)
+		}
+		list[i] = &model.Code{
+			ID:          string(fmt.Sprint(c.ID)),
+			Username:    c.Username,
+			Code:        c.Code,
+			Img:         string(c.Img),
+			Description: c.Description,
+			Performance: c.Performance,
+			Star:        stars,
+			Tags:        c.Tags,
+			CreatedAt:   c.CreatedAt,
+			UpdatedAt:   c.UpdatedAt,
+			Access:      int(c.Access),
+		}
+	}
+
+	return list, nil
+}
+
+func (r *queryResolver) GetAllOwnCodesResolver(ctx context.Context, userID int, limit int, skip int) ([]*model.Code, error) {
+	gc, err := GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	user, err := r.store.GetUserByID(gc, int64(userID))
+	if err != nil {
+		return nil, fmt.Errorf("GetUsername error in GetAllOwnCode: %v", err)
+	}
+
+	arg := db.GetAllOwnCodesParams{
+		Username: user.Username,
+		Limit:    int32(limit),
+		Offset:   int32(skip),
+	}
+
+	codes, err := r.store.GetAllOwnCodes(gc, arg)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllOwnCodesResolver failed : %v", err)
 	}
 
 	list := make([]*model.Code, len(codes))

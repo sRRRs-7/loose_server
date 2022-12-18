@@ -58,6 +58,7 @@ extend type Query {
     limit: Int!
     skip: Int!
   ): [Code!]!
+  getAllOwnCodes(user_id: Int!, limit: Int!, skip: Int!): [Code!]!
 }
 extend type Mutation {
   adminCreateCode(
@@ -166,8 +167,8 @@ type User implements Node {
 type LoginUserResponse implements Node {
   id: ID!
   user_id: Int!
-  OK: Boolean!
   username: String!
+  OK: Boolean!
 }
 extend type Mutation {
   createUser(
@@ -183,7 +184,7 @@ extend type Mutation {
     email: String!
   ): MutationResponse!
   loginUser(username: String!, password: String!): LoginUserResponse!
-  getUser(username: String!): Int!
+  getUser(user_id: Int!): User!
   deleteUser(username: String!): MutationResponse!
 }
 

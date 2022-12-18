@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/sRRRs-7/loose_style.git/cryptography"
@@ -65,14 +66,18 @@ func (r *mutationResolver) CreateCollectionResolver(ctx context.Context, codeID 
 	userId = userId[1:]
 	userId = userId[:len(userId)-1]
 
-	// get user id
-	userID, err := r.store.GetUser(gc, userId)
+	id, err := strconv.Atoi(userId)
+	if err != nil {
+		return nil, fmt.Errorf("atoi redis id: %v", err)
+	}
+
+	user, err := r.store.GetUserByID(gc, int64(id))
 	if err != nil {
 		return nil, fmt.Errorf("GetUser in all collection error : %v", err)
 	}
 
 	args := db.CreateCollectionParams{
-		UserID: int64(userID),
+		UserID: int64(user.ID),
 		CodeID: int64(codeID),
 	}
 
@@ -172,14 +177,19 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	userId = userId[1:]
 	userId = userId[:len(userId)-1]
 
+	id, err := strconv.Atoi(userId)
+	if err != nil {
+		return nil, fmt.Errorf("atoi redis id : %v", err)
+	}
+
 	// get user id
-	id, err := r.store.GetUser(gc, userId)
+	user, err := r.store.GetUserByID(gc, int64(id))
 	if err != nil {
 		return nil, fmt.Errorf("GetUser error in GetAllCollectionBySearchResolver: %v", err)
 	}
 
 	args := db.GetAllCollectionsParams{
-		UserID: id,
+		UserID: user.ID,
 		Limit:  int32(limit),
 		Offset: int32(skip),
 	}
@@ -244,22 +254,20 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 	username = username[1:]
 	username = username[:len(username)-1]
 
-	// get user id
-	id, err := r.store.GetUser(gc, username)
+	// get user
+	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
 		return nil, fmt.Errorf("GetUser error in GetAllCollectionSearchResolver: %v", err)
 	}
 
 	args := db.GetAllCollectionsBySearchParams{
-		UserID:      id,
+		UserID:      user.ID,
 		Username:    "%" + keyword + "%",
 		Code:        "%" + keyword + "%",
 		Description: "%" + keyword + "%",
 		Limit:       int32(limit),
 		Offset:      int32(skip),
 	}
-
-	fmt.Println(id)
 
 	// get all collection
 	collections, err := r.store.GetAllCollectionsBySearch(gc, args)

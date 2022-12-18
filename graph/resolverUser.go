@@ -81,18 +81,18 @@ func (r *mutationResolver) LoginUserResolver(ctx context.Context, username strin
 	return res, nil
 }
 
-func (r *mutationResolver) GetUserResolver(ctx context.Context, username string) (int, error) {
+func (r *mutationResolver) GetUserIDResolver(ctx context.Context, username string) (int, error) {
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("gin context convert error: %v", err)
 	}
 
-	user, err := r.store.GetUser(gc, username)
+	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
-		return 0, fmt.Errorf("GetUser error : %v", err)
+		return 0, fmt.Errorf("GetUserIDResolver error : %v", err)
 	}
 
-	return int(user), nil
+	return int(user.ID), nil
 }
 
 func (r *mutationResolver) UpdateUserResolver(ctx context.Context, username string, updateName string, email string) (*model.MutationResponse, error) {
@@ -127,12 +127,12 @@ func (r *mutationResolver) DeleteUserResolver(ctx context.Context, username stri
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
-	id, err := r.store.GetUser(gc, username)
+	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
 		return nil, fmt.Errorf("GetUser error in deleteUserResolver: %v", err)
 	}
 
-	err = r.store.DeleteUser(gc, id)
+	err = r.store.DeleteUser(gc, user.ID)
 	if err != nil {
 		return nil, fmt.Errorf("delete User error: %v", err)
 	}

@@ -115,7 +115,7 @@ type ComplexityRoot struct {
 		GetCode               func(childComplexity int, id int) int
 		GetCollection         func(childComplexity int, id int) int
 		GetMedia              func(childComplexity int, id int) int
-		GetUser               func(childComplexity int, username string) int
+		GetUser               func(childComplexity int, userID int) int
 		LoginUser             func(childComplexity int, username string, password string) int
 		UpdateAccess          func(childComplexity int, id int, access int) int
 		UpdateCodes           func(childComplexity int, id int, code string, img string, description string, performance string, tags []string) int
@@ -139,6 +139,7 @@ type ComplexityRoot struct {
 		GetAllCollection         func(childComplexity int, limit int, skip int) int
 		GetAllCollectionBySearch func(childComplexity int, keyword string, limit int, skip int) int
 		GetAllMedia              func(childComplexity int, limit int, skip int) int
+		GetAllOwnCodes           func(childComplexity int, userID int, limit int, skip int) int
 	}
 
 	User struct {
@@ -186,7 +187,7 @@ type MutationResolver interface {
 	CreateUser(ctx context.Context, username string, password string, email string, sex string, dateOfBirth string) (*model.MutationResponse, error)
 	UpdateUser(ctx context.Context, username string, updateName string, email string) (*model.MutationResponse, error)
 	LoginUser(ctx context.Context, username string, password string) (*model.LoginUserResponse, error)
-	GetUser(ctx context.Context, username string) (int, error)
+	GetUser(ctx context.Context, userID int) (*model.User, error)
 	DeleteUser(ctx context.Context, username string) (*model.MutationResponse, error)
 	CreateToken(ctx context.Context, username string) (string, error)
 	CreateAdminToken(ctx context.Context, username string) (string, error)
@@ -197,6 +198,7 @@ type QueryResolver interface {
 	GetAllCodesSortedStar(ctx context.Context, limit int, skip int) ([]*model.Code, error)
 	GetAllCodesSortedAccess(ctx context.Context, limit int, skip int) ([]*model.Code, error)
 	GetAllCodesByTag(ctx context.Context, tags []*string, sortBy model.SortBy, limit int, skip int) ([]*model.Code, error)
+	GetAllOwnCodes(ctx context.Context, userID int, limit int, skip int) ([]*model.Code, error)
 	GetAllCollection(ctx context.Context, limit int, skip int) ([]*model.CodeWithCollectionID, error)
 	GetAllCollectionBySearch(ctx context.Context, keyword string, limit int, skip int) ([]*model.CodeWithCollectionID, error)
 	GetAllMedia(ctx context.Context, limit int, skip int) ([]*model.Media, error)
@@ -683,7 +685,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.GetUser(childComplexity, args["username"].(string)), true
+		return e.complexity.Mutation.GetUser(childComplexity, args["user_id"].(int)), true
 
 	case "Mutation.loginUser":
 		if e.complexity.Mutation.LoginUser == nil {
@@ -873,6 +875,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetAllMedia(childComplexity, args["limit"].(int), args["skip"].(int)), true
+
+	case "Query.getAllOwnCodes":
+		if e.complexity.Query.GetAllOwnCodes == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getAllOwnCodes_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAllOwnCodes(childComplexity, args["user_id"].(int), args["limit"].(int), args["skip"].(int)), true
 
 	case "User.created_at":
 		if e.complexity.User.CreatedAt == nil {
@@ -1099,6 +1113,7 @@ extend type Query {
     limit: Int!
     skip: Int!
   ): [Code!]!
+  getAllOwnCodes(user_id: Int!, limit: Int!, skip: Int!): [Code!]!
 }
 extend type Mutation {
   adminCreateCode(
@@ -1207,8 +1222,8 @@ type User implements Node {
 type LoginUserResponse implements Node {
   id: ID!
   user_id: Int!
-  OK: Boolean!
   username: String!
+  OK: Boolean!
 }
 extend type Mutation {
   createUser(
@@ -1224,7 +1239,7 @@ extend type Mutation {
     email: String!
   ): MutationResponse!
   loginUser(username: String!, password: String!): LoginUserResponse!
-  getUser(username: String!): Int!
+  getUser(user_id: Int!): User!
   deleteUser(username: String!): MutationResponse!
 }
 
@@ -1718,15 +1733,15 @@ func (ec *executionContext) field_Mutation_getMedia_args(ctx context.Context, ra
 func (ec *executionContext) field_Mutation_getUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["username"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 int
+	if tmp, ok := rawArgs["user_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["username"] = arg0
+	args["user_id"] = arg0
 	return args, nil
 }
 
@@ -2168,6 +2183,39 @@ func (ec *executionContext) field_Query_getAllMedia_args(ctx context.Context, ra
 		}
 	}
 	args["skip"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getAllOwnCodes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["user_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["user_id"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["skip"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["skip"] = arg2
 	return args, nil
 }
 
@@ -3441,50 +3489,6 @@ func (ec *executionContext) fieldContext_LoginUserResponse_user_id(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _LoginUserResponse_OK(ctx context.Context, field graphql.CollectedField, obj *model.LoginUserResponse) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LoginUserResponse_OK(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Ok, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_LoginUserResponse_OK(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "LoginUserResponse",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _LoginUserResponse_username(ctx context.Context, field graphql.CollectedField, obj *model.LoginUserResponse) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LoginUserResponse_username(ctx, field)
 	if err != nil {
@@ -3524,6 +3528,50 @@ func (ec *executionContext) fieldContext_LoginUserResponse_username(ctx context.
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoginUserResponse_OK(ctx context.Context, field graphql.CollectedField, obj *model.LoginUserResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginUserResponse_OK(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ok, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoginUserResponse_OK(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoginUserResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5073,10 +5121,10 @@ func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context,
 				return ec.fieldContext_LoginUserResponse_id(ctx, field)
 			case "user_id":
 				return ec.fieldContext_LoginUserResponse_user_id(ctx, field)
-			case "OK":
-				return ec.fieldContext_LoginUserResponse_OK(ctx, field)
 			case "username":
 				return ec.fieldContext_LoginUserResponse_username(ctx, field)
+			case "OK":
+				return ec.fieldContext_LoginUserResponse_OK(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoginUserResponse", field.Name)
 		},
@@ -5109,7 +5157,7 @@ func (ec *executionContext) _Mutation_getUser(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GetUser(rctx, fc.Args["username"].(string))
+		return ec.resolvers.Mutation().GetUser(rctx, fc.Args["user_id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5121,9 +5169,9 @@ func (ec *executionContext) _Mutation_getUser(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_getUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5133,7 +5181,25 @@ func (ec *executionContext) fieldContext_Mutation_getUser(ctx context.Context, f
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "password":
+				return ec.fieldContext_User_password(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "sex":
+				return ec.fieldContext_User_sex(ctx, field)
+			case "date_of_birth":
+				return ec.fieldContext_User_date_of_birth(ctx, field)
+			case "created_at":
+				return ec.fieldContext_User_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_User_updated_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	defer func() {
@@ -5844,6 +5910,85 @@ func (ec *executionContext) fieldContext_Query_getAllCodesByTag(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getAllCodesByTag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getAllOwnCodes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getAllOwnCodes(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAllOwnCodes(rctx, fc.Args["user_id"].(int), fc.Args["limit"].(int), fc.Args["skip"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Code)
+	fc.Result = res
+	return ec.marshalNCode2ᚕᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCodeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getAllOwnCodes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Code_id(ctx, field)
+			case "username":
+				return ec.fieldContext_Code_username(ctx, field)
+			case "code":
+				return ec.fieldContext_Code_code(ctx, field)
+			case "img":
+				return ec.fieldContext_Code_img(ctx, field)
+			case "description":
+				return ec.fieldContext_Code_description(ctx, field)
+			case "performance":
+				return ec.fieldContext_Code_performance(ctx, field)
+			case "star":
+				return ec.fieldContext_Code_star(ctx, field)
+			case "tags":
+				return ec.fieldContext_Code_tags(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Code_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Code_updated_at(ctx, field)
+			case "access":
+				return ec.fieldContext_Code_access(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getAllOwnCodes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -8948,16 +9093,16 @@ func (ec *executionContext) _LoginUserResponse(ctx context.Context, sel ast.Sele
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "OK":
+		case "username":
 
-			out.Values[i] = ec._LoginUserResponse_OK(ctx, field, obj)
+			out.Values[i] = ec._LoginUserResponse_username(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "username":
+		case "OK":
 
-			out.Values[i] = ec._LoginUserResponse_username(ctx, field, obj)
+			out.Values[i] = ec._LoginUserResponse_OK(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -9445,6 +9590,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getAllCodesByTag(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getAllOwnCodes":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getAllOwnCodes(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -10413,6 +10581,20 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

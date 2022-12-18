@@ -324,6 +324,51 @@ func (q *Queries) GetAllCodesSortedStar(ctx context.Context, arg GetAllCodesSort
 	return items, nil
 }
 
+const getAllOwnCodes = `-- name: GetAllOwnCodes :many
+SELECT id, username, code, img, description, performance, star, tags, created_at, updated_at, access FROM codes
+WHERE username = $1
+LIMIT $2
+OFFSET $3
+`
+
+type GetAllOwnCodesParams struct {
+	Username string `json:"username"`
+	Limit    int32  `json:"limit"`
+	Offset   int32  `json:"offset"`
+}
+
+func (q *Queries) GetAllOwnCodes(ctx context.Context, arg GetAllOwnCodesParams) ([]*Codes, error) {
+	rows, err := q.db.Query(ctx, getAllOwnCodes, arg.Username, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*Codes{}
+	for rows.Next() {
+		var i Codes
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Code,
+			&i.Img,
+			&i.Description,
+			&i.Performance,
+			&i.Star,
+			&i.Tags,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Access,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCode = `-- name: GetCode :one
 SELECT id, username, code, img, description, performance, star, tags, created_at, updated_at, access FROM codes
 WHERE id = $1

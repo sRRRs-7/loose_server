@@ -12,7 +12,7 @@ INNER JOIN codes AS c ON col.code_id = c.id
 WHERE c.id = $1;
 
 -- name: GetAllCollections :many
-SELECT DISTINCT col.id, col.id, c.* FROM collection AS col
+SELECT DISTINCT c.id, col.id, c.* FROM collection AS col
 INNER JOIN users AS u ON col.user_id = u.id
 INNER JOIN codes AS c ON col.code_id = c.id
 WHERE col.user_id = $1
@@ -21,7 +21,7 @@ LIMIT $2
 OFFSET $3;
 
 -- name: GetAllCollectionsBySearch :many
-SELECT DISTINCT col.id, col.id, c.* FROM collection AS col
+SELECT DISTINCT c.id, col.id, c.* FROM collection AS col
 INNER JOIN users AS u ON col.user_id = u.id
 INNER JOIN codes AS c ON col.code_id = c.id
 WHERE col.user_id = $1 AND

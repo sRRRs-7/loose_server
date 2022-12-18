@@ -57,16 +57,46 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	return err
 }
 
-const getUser = `-- name: GetUser :one
-SELECT id FROM users
+const getUserByID = `-- name: GetUserByID :one
+SELECT id, username, password, email, sex, data_of_birth, created_at, updated_at FROM users
+WHERE id = $1
+`
+
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (*Users, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
+	var i Users
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.Email,
+		&i.Sex,
+		&i.DataOfBirth,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
+}
+
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, username, password, email, sex, data_of_birth, created_at, updated_at FROM users
 WHERE username = $1
 `
 
-func (q *Queries) GetUser(ctx context.Context, username string) (int64, error) {
-	row := q.db.QueryRow(ctx, getUser, username)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (*Users, error) {
+	row := q.db.QueryRow(ctx, getUserByUsername, username)
+	var i Users
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.Email,
+		&i.Sex,
+		&i.DataOfBirth,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
 }
 
 const loginUser = `-- name: LoginUser :one

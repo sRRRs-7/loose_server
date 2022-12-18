@@ -57,8 +57,8 @@ func (Collection) IsNode() {}
 type LoginUserResponse struct {
 	ID       string `json:"id"`
 	UserID   int    `json:"user_id"`
-	Ok       bool   `json:"OK"`
 	Username string `json:"username"`
+	Ok       bool   `json:"OK"`
 }
 
 func (LoginUserResponse) IsNode() {}

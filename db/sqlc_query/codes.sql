@@ -54,6 +54,12 @@ ORDER BY access DESC
 LIMIT $1
 OFFSET $2;
 
+-- name: GetAllOwnCodes :many
+SELECT * FROM codes
+WHERE username = $1
+LIMIT $2
+OFFSET $3;
+
 -- name: UpdateCode :exec
 UPDATE codes
 SET code = $2,

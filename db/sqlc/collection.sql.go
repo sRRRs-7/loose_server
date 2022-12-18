@@ -39,7 +39,7 @@ func (q *Queries) DeleteCollection(ctx context.Context, id int64) error {
 }
 
 const getAllCollections = `-- name: GetAllCollections :many
-SELECT DISTINCT col.id, col.id, c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access FROM collection AS col
+SELECT DISTINCT c.id, col.id, c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access FROM collection AS col
 INNER JOIN users AS u ON col.user_id = u.id
 INNER JOIN codes AS c ON col.code_id = c.id
 WHERE col.user_id = $1
@@ -105,7 +105,7 @@ func (q *Queries) GetAllCollections(ctx context.Context, arg GetAllCollectionsPa
 }
 
 const getAllCollectionsBySearch = `-- name: GetAllCollectionsBySearch :many
-SELECT DISTINCT col.id, col.id, c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access FROM collection AS col
+SELECT DISTINCT c.id, col.id, c.id, c.username, c.code, c.img, c.description, c.performance, c.star, c.tags, c.created_at, c.updated_at, c.access FROM collection AS col
 INNER JOIN users AS u ON col.user_id = u.id
 INNER JOIN codes AS c ON col.code_id = c.id
 WHERE col.user_id = $1 AND

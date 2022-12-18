@@ -11,9 +11,13 @@ INSERT INTO users (
     $1, $2, $3, $4, $5, $6, $7
 );
 
--- name: GetUser :one
-SELECT id FROM users
+-- name: GetUserByUsername :one
+SELECT * FROM users
 WHERE username = $1;
+
+-- name: GetUserByID :one
+SELECT * FROM users
+WHERE id = $1;
 
 -- name: LoginUser :one
 SELECT * FROM users

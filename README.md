@@ -1,21 +1,18 @@
-memo
-docker
-sql_migrate.yml -> localhost -> postgres
-
+task
 postgres store image type OK
-
+collection table distinct
 mock test
-
 github actions
 AWS (EC2, ECS)
 terraform
-
 mecab
 hebon
-
-update access transaction sqlc
+transaction update access sqlc
 
 HTTPS + TOKEN + FORM auth
+
+docker
+sql_migrate.yml -> localhost -> postgres
 
 - log in
 - log out
