@@ -262,7 +262,7 @@ func (r *mutationResolver) DeleteCodeResolver(ctx context.Context, id int) (*mod
 	return res, nil
 }
 
-func (r *mutationResolver) GetCodeResolver(ctx context.Context, id int) (*model.Code, error) {
+func (r *queryResolver) GetCodeResolver(ctx context.Context, id int) (*model.Code, error) {
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)

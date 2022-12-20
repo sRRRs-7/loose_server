@@ -59,6 +59,7 @@ extend type Query {
     skip: Int!
   ): [Code!]!
   getAllOwnCodes(user_id: Int!, limit: Int!, skip: Int!): [Code!]!
+  getCode(id: Int!): Code!
 }
 extend type Mutation {
   adminCreateCode(
@@ -88,7 +89,6 @@ extend type Mutation {
     performance: String!
     tags: [String!]!
   ): MutationResponse!
-  getCode(id: Int!): Code!
   updateStar(code_id: Int!): MutationResponse!
   updateAccess(id: Int!, access: Int!): MutationResponse!
   deleteCode(id: Int!): MutationResponse!
@@ -184,7 +184,6 @@ extend type Mutation {
     email: String!
   ): MutationResponse!
   loginUser(username: String!, password: String!): LoginUserResponse!
-  getUser(user_id: Int!): User!
   deleteUser(username: String!): MutationResponse!
 }
 

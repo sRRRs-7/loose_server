@@ -81,20 +81,6 @@ func (r *mutationResolver) LoginUserResolver(ctx context.Context, username strin
 	return res, nil
 }
 
-func (r *mutationResolver) GetUserIDResolver(ctx context.Context, username string) (int, error) {
-	gc, err := GinContextFromContext(ctx)
-	if err != nil {
-		return 0, fmt.Errorf("gin context convert error: %v", err)
-	}
-
-	user, err := r.store.GetUserByUsername(gc, username)
-	if err != nil {
-		return 0, fmt.Errorf("GetUserIDResolver error : %v", err)
-	}
-
-	return int(user.ID), nil
-}
-
 func (r *mutationResolver) UpdateUserResolver(ctx context.Context, username string, updateName string, email string) (*model.MutationResponse, error) {
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {

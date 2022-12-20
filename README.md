@@ -1,5 +1,6 @@
 task
 postgres store image type OK
+
 collection table distinct
 mock test
 github actions
@@ -8,9 +9,10 @@ terraform
 mecab
 hebon
 transaction update access sqlc
-
 HTTPS + TOKEN + FORM auth
+specification
 
+memo
 docker
 sql_migrate.yml -> localhost -> postgres
 

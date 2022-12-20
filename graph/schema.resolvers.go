@@ -51,14 +51,6 @@ func (r *mutationResolver) UpdateCodes(ctx context.Context, id int, code string,
 	return res, nil
 }
 
-func (r *mutationResolver) GetCode(ctx context.Context, id int) (*model.Code, error) {
-	res, err := r.GetCodeResolver(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("GetCode error: %v", err)
-	}
-	return res, nil
-}
-
 func (r *mutationResolver) UpdateStar(ctx context.Context, codeID int) (*model.MutationResponse, error) {
 	res, err := r.UpdateStarResolver(ctx, codeID)
 	if err != nil {
@@ -178,10 +170,6 @@ func (r *mutationResolver) LoginUser(ctx context.Context, username string, passw
 	return res, nil
 }
 
-func (r *mutationResolver) GetUser(ctx context.Context, userID int) (*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *mutationResolver) DeleteUser(ctx context.Context, username string) (*model.MutationResponse, error) {
 	res, err := r.DeleteUserResolver(ctx, username)
 	if err != nil {
@@ -254,6 +242,14 @@ func (r *queryResolver) GetAllOwnCodes(ctx context.Context, userID int, limit in
 	return res, nil
 }
 
+func (r *queryResolver) GetCode(ctx context.Context, id int) (*model.Code, error) {
+	res, err := r.GetCodeResolver(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("GetCode error: %v", err)
+	}
+	return res, nil
+}
+
 func (r *queryResolver) GetAllCollection(ctx context.Context, limit int, skip int) ([]*model.CodeWithCollectionID, error) {
 	res, err := r.GetAllCollectionResolver(ctx, limit, skip)
 	if err != nil {
@@ -293,10 +289,6 @@ type queryResolver struct{ *Resolver }
 //   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
 //     it when you're done.
 //   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *mutationResolver) GetUserID(ctx context.Context, username string) (int, error) {
-	res, err := r.GetUserIDResolver(ctx, username)
-	if err != nil {
-		return 0, fmt.Errorf("GetUser error: %v", err)
-	}
-	return res, nil
+func (r *mutationResolver) GetUser(ctx context.Context, userID int) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
 }

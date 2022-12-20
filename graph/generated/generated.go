@@ -112,10 +112,8 @@ type ComplexityRoot struct {
 		DeleteMedia           func(childComplexity int, id int) int
 		DeleteUser            func(childComplexity int, username string) int
 		GetAdminUser          func(childComplexity int, username string, password string) int
-		GetCode               func(childComplexity int, id int) int
 		GetCollection         func(childComplexity int, id int) int
 		GetMedia              func(childComplexity int, id int) int
-		GetUser               func(childComplexity int, userID int) int
 		LoginUser             func(childComplexity int, username string, password string) int
 		UpdateAccess          func(childComplexity int, id int, access int) int
 		UpdateCodes           func(childComplexity int, id int, code string, img string, description string, performance string, tags []string) int
@@ -140,6 +138,7 @@ type ComplexityRoot struct {
 		GetAllCollectionBySearch func(childComplexity int, keyword string, limit int, skip int) int
 		GetAllMedia              func(childComplexity int, limit int, skip int) int
 		GetAllOwnCodes           func(childComplexity int, userID int, limit int, skip int) int
+		GetCode                  func(childComplexity int, id int) int
 	}
 
 	User struct {
@@ -172,7 +171,6 @@ type MutationResolver interface {
 	AdminCreateCode(ctx context.Context, username string, code string, img string, description string, performance string, star []int, tags []string, access int) (*model.MutationResponse, error)
 	CreateCode(ctx context.Context, code string, img string, description string, performance string, star []int, tags []string, access int) (*model.MutationResponse, error)
 	UpdateCodes(ctx context.Context, id int, code string, img string, description string, performance string, tags []string) (*model.MutationResponse, error)
-	GetCode(ctx context.Context, id int) (*model.Code, error)
 	UpdateStar(ctx context.Context, codeID int) (*model.MutationResponse, error)
 	UpdateAccess(ctx context.Context, id int, access int) (*model.MutationResponse, error)
 	DeleteCode(ctx context.Context, id int) (*model.MutationResponse, error)
@@ -187,7 +185,6 @@ type MutationResolver interface {
 	CreateUser(ctx context.Context, username string, password string, email string, sex string, dateOfBirth string) (*model.MutationResponse, error)
 	UpdateUser(ctx context.Context, username string, updateName string, email string) (*model.MutationResponse, error)
 	LoginUser(ctx context.Context, username string, password string) (*model.LoginUserResponse, error)
-	GetUser(ctx context.Context, userID int) (*model.User, error)
 	DeleteUser(ctx context.Context, username string) (*model.MutationResponse, error)
 	CreateToken(ctx context.Context, username string) (string, error)
 	CreateAdminToken(ctx context.Context, username string) (string, error)
@@ -199,6 +196,7 @@ type QueryResolver interface {
 	GetAllCodesSortedAccess(ctx context.Context, limit int, skip int) ([]*model.Code, error)
 	GetAllCodesByTag(ctx context.Context, tags []*string, sortBy model.SortBy, limit int, skip int) ([]*model.Code, error)
 	GetAllOwnCodes(ctx context.Context, userID int, limit int, skip int) ([]*model.Code, error)
+	GetCode(ctx context.Context, id int) (*model.Code, error)
 	GetAllCollection(ctx context.Context, limit int, skip int) ([]*model.CodeWithCollectionID, error)
 	GetAllCollectionBySearch(ctx context.Context, keyword string, limit int, skip int) ([]*model.CodeWithCollectionID, error)
 	GetAllMedia(ctx context.Context, limit int, skip int) ([]*model.Media, error)
@@ -639,18 +637,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.GetAdminUser(childComplexity, args["username"].(string), args["password"].(string)), true
 
-	case "Mutation.getCode":
-		if e.complexity.Mutation.GetCode == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_getCode_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.GetCode(childComplexity, args["id"].(int)), true
-
 	case "Mutation.getCollection":
 		if e.complexity.Mutation.GetCollection == nil {
 			break
@@ -674,18 +660,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.GetMedia(childComplexity, args["id"].(int)), true
-
-	case "Mutation.getUser":
-		if e.complexity.Mutation.GetUser == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_getUser_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.GetUser(childComplexity, args["user_id"].(int)), true
 
 	case "Mutation.loginUser":
 		if e.complexity.Mutation.LoginUser == nil {
@@ -887,6 +861,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetAllOwnCodes(childComplexity, args["user_id"].(int), args["limit"].(int), args["skip"].(int)), true
+
+	case "Query.getCode":
+		if e.complexity.Query.GetCode == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getCode_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetCode(childComplexity, args["id"].(int)), true
 
 	case "User.created_at":
 		if e.complexity.User.CreatedAt == nil {
@@ -1114,6 +1100,7 @@ extend type Query {
     skip: Int!
   ): [Code!]!
   getAllOwnCodes(user_id: Int!, limit: Int!, skip: Int!): [Code!]!
+  getCode(id: Int!): Code!
 }
 extend type Mutation {
   adminCreateCode(
@@ -1143,7 +1130,6 @@ extend type Mutation {
     performance: String!
     tags: [String!]!
   ): MutationResponse!
-  getCode(id: Int!): Code!
   updateStar(code_id: Int!): MutationResponse!
   updateAccess(id: Int!, access: Int!): MutationResponse!
   deleteCode(id: Int!): MutationResponse!
@@ -1239,7 +1225,6 @@ extend type Mutation {
     email: String!
   ): MutationResponse!
   loginUser(username: String!, password: String!): LoginUserResponse!
-  getUser(user_id: Int!): User!
   deleteUser(username: String!): MutationResponse!
 }
 
@@ -1685,21 +1670,6 @@ func (ec *executionContext) field_Mutation_getAdminUser_args(ctx context.Context
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_getCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_getCollection_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1727,21 +1697,6 @@ func (ec *executionContext) field_Mutation_getMedia_args(ctx context.Context, ra
 		}
 	}
 	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_getUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["user_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["user_id"] = arg0
 	return args, nil
 }
 
@@ -2216,6 +2171,21 @@ func (ec *executionContext) field_Query_getAllOwnCodes_args(ctx context.Context,
 		}
 	}
 	args["skip"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -4156,85 +4126,6 @@ func (ec *executionContext) fieldContext_Mutation_updateCodes(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_getCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_getCode(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GetCode(rctx, fc.Args["id"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.Code)
-	fc.Result = res
-	return ec.marshalNCode2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCode(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_getCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Code_id(ctx, field)
-			case "username":
-				return ec.fieldContext_Code_username(ctx, field)
-			case "code":
-				return ec.fieldContext_Code_code(ctx, field)
-			case "img":
-				return ec.fieldContext_Code_img(ctx, field)
-			case "description":
-				return ec.fieldContext_Code_description(ctx, field)
-			case "performance":
-				return ec.fieldContext_Code_performance(ctx, field)
-			case "star":
-				return ec.fieldContext_Code_star(ctx, field)
-			case "tags":
-				return ec.fieldContext_Code_tags(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Code_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Code_updated_at(ctx, field)
-			case "access":
-				return ec.fieldContext_Code_access(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_getCode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_updateStar(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_updateStar(ctx, field)
 	if err != nil {
@@ -5143,79 +5034,6 @@ func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_getUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_getUser(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GetUser(rctx, fc.Args["user_id"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.User)
-	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_getUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_User_id(ctx, field)
-			case "username":
-				return ec.fieldContext_User_username(ctx, field)
-			case "password":
-				return ec.fieldContext_User_password(ctx, field)
-			case "email":
-				return ec.fieldContext_User_email(ctx, field)
-			case "sex":
-				return ec.fieldContext_User_sex(ctx, field)
-			case "date_of_birth":
-				return ec.fieldContext_User_date_of_birth(ctx, field)
-			case "created_at":
-				return ec.fieldContext_User_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_User_updated_at(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_getUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_deleteUser(ctx, field)
 	if err != nil {
@@ -5989,6 +5807,85 @@ func (ec *executionContext) fieldContext_Query_getAllOwnCodes(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getAllOwnCodes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetCode(rctx, fc.Args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Code)
+	fc.Result = res
+	return ec.marshalNCode2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐCode(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Code_id(ctx, field)
+			case "username":
+				return ec.fieldContext_Code_username(ctx, field)
+			case "code":
+				return ec.fieldContext_Code_code(ctx, field)
+			case "img":
+				return ec.fieldContext_Code_img(ctx, field)
+			case "description":
+				return ec.fieldContext_Code_description(ctx, field)
+			case "performance":
+				return ec.fieldContext_Code_performance(ctx, field)
+			case "star":
+				return ec.fieldContext_Code_star(ctx, field)
+			case "tags":
+				return ec.fieldContext_Code_tags(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Code_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Code_updated_at(ctx, field)
+			case "access":
+				return ec.fieldContext_Code_access(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getCode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -9245,15 +9142,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "getCode":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_getCode(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "updateStar":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -9375,15 +9263,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_loginUser(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "getUser":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_getUser(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -9613,6 +9492,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getAllOwnCodes(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getCode":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getCode(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -10581,20 +10483,6 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNUser2githubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
-	return ec._User(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋsRRRsᚑ7ᚋloose_styleᚗgitᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

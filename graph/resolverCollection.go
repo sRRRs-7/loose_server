@@ -3,7 +3,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/sRRRs-7/loose_style.git/cryptography"
@@ -62,16 +61,11 @@ func (r *mutationResolver) CreateCollectionResolver(ctx context.Context, codeID 
 	// string processing
 	s := strings.Split(redisValue.String(), ",")
 	s = strings.Split(s[1], ":")
-	userId := s[1]
-	userId = userId[1:]
-	userId = userId[:len(userId)-1]
+	username := s[1]
+	username = username[1:]
+	username = username[:len(username)-1]
 
-	id, err := strconv.Atoi(userId)
-	if err != nil {
-		return nil, fmt.Errorf("atoi redis id: %v", err)
-	}
-
-	user, err := r.store.GetUserByID(gc, int64(id))
+	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
 		return nil, fmt.Errorf("GetUser in all collection error : %v", err)
 	}
@@ -173,17 +167,12 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	// string processing
 	s := strings.Split(redisValue.String(), ",")
 	s = strings.Split(s[1], ":")
-	userId := s[1]
-	userId = userId[1:]
-	userId = userId[:len(userId)-1]
-
-	id, err := strconv.Atoi(userId)
-	if err != nil {
-		return nil, fmt.Errorf("atoi redis id : %v", err)
-	}
+	username := s[1]
+	username = username[1:]
+	username = username[:len(username)-1]
 
 	// get user id
-	user, err := r.store.GetUserByID(gc, int64(id))
+	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
 		return nil, fmt.Errorf("GetUser error in GetAllCollectionBySearchResolver: %v", err)
 	}
