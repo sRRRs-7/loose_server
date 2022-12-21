@@ -268,6 +268,30 @@ func (r *queryResolver) GetCodeResolver(ctx context.Context, id int) (*model.Cod
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
+	// user id get from redis
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+
+	var username string
+	if fields[1] != "undefined" {
+		accessToken := fields[1]
+
+		key, _ := cryptography.HashPassword(accessToken)
+		// redis value get
+		redisValue := session.GetRedis(gc, key)
+		// string processing
+		s := strings.Split(redisValue.String(), ",")
+		s = strings.Split(s[1], ":")
+		username = s[1]
+		username = username[1:]
+		username = username[:len(username)-1]
+	}
+
+	user, err := r.store.GetUserByUsername(gc, username)
+	if err != nil {
+		user.ID = 0
+	}
+
 	code, err := r.store.GetCode(gc, int64(id))
 	if err != nil {
 		return nil, fmt.Errorf("failed to GetCode: %v", err)
@@ -291,6 +315,7 @@ func (r *queryResolver) GetCodeResolver(ctx context.Context, id int) (*model.Cod
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 		Access:      int(code.Access),
+		UserID:      int(user.ID),
 	}
 
 	return res, nil
@@ -302,6 +327,30 @@ func (r *queryResolver) GetAllCodesByTagResolver(ctx context.Context, tags []*st
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	// user id get from redis
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+
+	var username string
+	if fields[1] != "undefined" {
+		accessToken := fields[1]
+
+		key, _ := cryptography.HashPassword(accessToken)
+		// redis value get
+		redisValue := session.GetRedis(gc, key)
+		// string processing
+		s := strings.Split(redisValue.String(), ",")
+		s = strings.Split(s[1], ":")
+		username = s[1]
+		username = username[1:]
+		username = username[:len(username)-1]
+	}
+
+	user, err := r.store.GetUserByUsername(gc, username)
+	if err != nil {
+		user.ID = 0
 	}
 
 	t := make([]string, 10)
@@ -358,6 +407,7 @@ func (r *queryResolver) GetAllCodesByTagResolver(ctx context.Context, tags []*st
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
 			Access:      int(c.Access),
+			UserID:      int(user.ID),
 		}
 	}
 
@@ -368,6 +418,30 @@ func (r *queryResolver) GetAllCodesByKeywordResolver(ctx context.Context, keywor
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	// user id get from redis
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+
+	var username string
+	if fields[1] != "undefined" {
+		accessToken := fields[1]
+
+		key, _ := cryptography.HashPassword(accessToken)
+		// redis value get
+		redisValue := session.GetRedis(gc, key)
+		// string processing
+		s := strings.Split(redisValue.String(), ",")
+		s = strings.Split(s[1], ":")
+		username = s[1]
+		username = username[1:]
+		username = username[:len(username)-1]
+	}
+
+	user, err := r.store.GetUserByUsername(gc, username)
+	if err != nil {
+		user.ID = 0
 	}
 
 	args := db.GetAllCodesByKeywordParams{
@@ -402,6 +476,7 @@ func (r *queryResolver) GetAllCodesByKeywordResolver(ctx context.Context, keywor
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
 			Access:      int(c.Access),
+			UserID:      int(user.ID),
 		}
 	}
 
@@ -412,6 +487,30 @@ func (r *queryResolver) GetAllCodesSortedStarResolver(ctx context.Context, limit
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	// user id get from redis
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+
+	var username string
+	if fields[1] != "undefined" {
+		accessToken := fields[1]
+
+		key, _ := cryptography.HashPassword(accessToken)
+		// redis value get
+		redisValue := session.GetRedis(gc, key)
+		// string processing
+		s := strings.Split(redisValue.String(), ",")
+		s = strings.Split(s[1], ":")
+		username = s[1]
+		username = username[1:]
+		username = username[:len(username)-1]
+	}
+
+	user, err := r.store.GetUserByUsername(gc, username)
+	if err != nil {
+		user.ID = 0
 	}
 
 	args := db.GetAllCodesSortedStarParams{
@@ -443,6 +542,7 @@ func (r *queryResolver) GetAllCodesSortedStarResolver(ctx context.Context, limit
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
 			Access:      int(c.Access),
+			UserID:      int(user.ID),
 		}
 	}
 
@@ -453,6 +553,30 @@ func (r *queryResolver) GetAllCodesSortedAccessResolver(ctx context.Context, lim
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	// user id get from redis
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+
+	var username string
+	if fields[1] != "undefined" {
+		accessToken := fields[1]
+
+		key, _ := cryptography.HashPassword(accessToken)
+		// redis value get
+		redisValue := session.GetRedis(gc, key)
+		// string processing
+		s := strings.Split(redisValue.String(), ",")
+		s = strings.Split(s[1], ":")
+		username = s[1]
+		username = username[1:]
+		username = username[:len(username)-1]
+	}
+
+	user, err := r.store.GetUserByUsername(gc, username)
+	if err != nil {
+		user.ID = 0
 	}
 
 	args := db.GetAllCodesSortedAccessParams{
@@ -484,21 +608,41 @@ func (r *queryResolver) GetAllCodesSortedAccessResolver(ctx context.Context, lim
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
 			Access:      int(c.Access),
+			UserID:      int(user.ID),
 		}
 	}
 
 	return list, nil
 }
 
-func (r *queryResolver) GetAllOwnCodesResolver(ctx context.Context, userID int, limit int, skip int) ([]*model.Code, error) {
+func (r *queryResolver) GetAllOwnCodesResolver(ctx context.Context, limit int, skip int) ([]*model.Code, error) {
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
-	user, err := r.store.GetUserByID(gc, int64(userID))
+	// user id get from redis
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+
+	var username string
+	if fields[1] != "undefined" {
+		accessToken := fields[1]
+
+		key, _ := cryptography.HashPassword(accessToken)
+		// redis value get
+		redisValue := session.GetRedis(gc, key)
+		// string processing
+		s := strings.Split(redisValue.String(), ",")
+		s = strings.Split(s[1], ":")
+		username = s[1]
+		username = username[1:]
+		username = username[:len(username)-1]
+	}
+
+	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
-		return nil, fmt.Errorf("GetUsername error in GetAllOwnCode: %v", err)
+		user.ID = 0
 	}
 
 	arg := db.GetAllOwnCodesParams{
@@ -531,6 +675,7 @@ func (r *queryResolver) GetAllOwnCodesResolver(ctx context.Context, userID int, 
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
 			Access:      int(c.Access),
+			UserID:      int(user.ID),
 		}
 	}
 
@@ -542,6 +687,30 @@ func (r *queryResolver) GetAllCodesResolver(ctx context.Context, limit int, skip
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	// user id get from redis
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+
+	var username string
+	if fields[1] != "undefined" {
+		accessToken := fields[1]
+
+		key, _ := cryptography.HashPassword(accessToken)
+		// redis value get
+		redisValue := session.GetRedis(gc, key)
+		// string processing
+		s := strings.Split(redisValue.String(), ",")
+		s = strings.Split(s[1], ":")
+		username = s[1]
+		username = username[1:]
+		username = username[:len(username)-1]
+	}
+
+	user, err := r.store.GetUserByUsername(gc, username)
+	if err != nil {
+		user.ID = 0
 	}
 
 	args := db.GetAllCodesParams{
@@ -573,6 +742,7 @@ func (r *queryResolver) GetAllCodesResolver(ctx context.Context, limit int, skip
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
 			Access:      int(c.Access),
+			UserID:      int(user.ID),
 		}
 	}
 

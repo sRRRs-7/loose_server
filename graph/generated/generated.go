@@ -57,6 +57,7 @@ type ComplexityRoot struct {
 		Star        func(childComplexity int) int
 		Tags        func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
+		UserID      func(childComplexity int) int
 		Username    func(childComplexity int) int
 	}
 
@@ -72,6 +73,7 @@ type ComplexityRoot struct {
 		Star         func(childComplexity int) int
 		Tags         func(childComplexity int) int
 		UpdatedAt    func(childComplexity int) int
+		UserID       func(childComplexity int) int
 		Username     func(childComplexity int) int
 	}
 
@@ -137,7 +139,7 @@ type ComplexityRoot struct {
 		GetAllCollection         func(childComplexity int, limit int, skip int) int
 		GetAllCollectionBySearch func(childComplexity int, keyword string, limit int, skip int) int
 		GetAllMedia              func(childComplexity int, limit int, skip int) int
-		GetAllOwnCodes           func(childComplexity int, userID int, limit int, skip int) int
+		GetAllOwnCodes           func(childComplexity int, limit int, skip int) int
 		GetCode                  func(childComplexity int, id int) int
 	}
 
@@ -195,7 +197,7 @@ type QueryResolver interface {
 	GetAllCodesSortedStar(ctx context.Context, limit int, skip int) ([]*model.Code, error)
 	GetAllCodesSortedAccess(ctx context.Context, limit int, skip int) ([]*model.Code, error)
 	GetAllCodesByTag(ctx context.Context, tags []*string, sortBy model.SortBy, limit int, skip int) ([]*model.Code, error)
-	GetAllOwnCodes(ctx context.Context, userID int, limit int, skip int) ([]*model.Code, error)
+	GetAllOwnCodes(ctx context.Context, limit int, skip int) ([]*model.Code, error)
 	GetCode(ctx context.Context, id int) (*model.Code, error)
 	GetAllCollection(ctx context.Context, limit int, skip int) ([]*model.CodeWithCollectionID, error)
 	GetAllCollectionBySearch(ctx context.Context, keyword string, limit int, skip int) ([]*model.CodeWithCollectionID, error)
@@ -287,6 +289,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Code.UpdatedAt(childComplexity), true
 
+	case "Code.user_id":
+		if e.complexity.Code.UserID == nil {
+			break
+		}
+
+		return e.complexity.Code.UserID(childComplexity), true
+
 	case "Code.username":
 		if e.complexity.Code.Username == nil {
 			break
@@ -370,6 +379,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Code_with_CollectionId.UpdatedAt(childComplexity), true
+
+	case "Code_with_CollectionId.user_id":
+		if e.complexity.Code_with_CollectionId.UserID == nil {
+			break
+		}
+
+		return e.complexity.Code_with_CollectionId.UserID(childComplexity), true
 
 	case "Code_with_CollectionId.username":
 		if e.complexity.Code_with_CollectionId.Username == nil {
@@ -860,7 +876,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetAllOwnCodes(childComplexity, args["user_id"].(int), args["limit"].(int), args["skip"].(int)), true
+		return e.complexity.Query.GetAllOwnCodes(childComplexity, args["limit"].(int), args["skip"].(int)), true
 
 	case "Query.getCode":
 		if e.complexity.Query.GetCode == nil {
@@ -1087,6 +1103,7 @@ type Code implements Node {
   created_at: Time!
   updated_at: Time!
   access: Int!
+  user_id: Int!
 }
 extend type Query {
   getAllCodes(limit: Int!, skip: Int!): [Code!]!
@@ -1099,7 +1116,7 @@ extend type Query {
     limit: Int!
     skip: Int!
   ): [Code!]!
-  getAllOwnCodes(user_id: Int!, limit: Int!, skip: Int!): [Code!]!
+  getAllOwnCodes(limit: Int!, skip: Int!): [Code!]!
   getCode(id: Int!): Code!
 }
 extend type Mutation {
@@ -1154,6 +1171,7 @@ type Code_with_CollectionId implements Node {
   updated_at: Time!
   access: Int!
   collection_id: Int!
+  user_id: Int!
 }
 extend type Query {
   getAllCollection(limit: Int!, skip: Int!): [Code_with_CollectionId!]!
@@ -2145,32 +2163,23 @@ func (ec *executionContext) field_Query_getAllOwnCodes_args(ctx context.Context,
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
-	if tmp, ok := rawArgs["user_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
 		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["user_id"] = arg0
+	args["limit"] = arg0
 	var arg1 int
-	if tmp, ok := rawArgs["limit"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+	if tmp, ok := rawArgs["skip"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
 		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["limit"] = arg1
-	var arg2 int
-	if tmp, ok := rawArgs["skip"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
-		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["skip"] = arg2
+	args["skip"] = arg1
 	return args, nil
 }
 
@@ -2711,6 +2720,50 @@ func (ec *executionContext) fieldContext_Code_access(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Code_user_id(ctx context.Context, field graphql.CollectedField, obj *model.Code) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Code_user_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Code_user_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Code",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Code_with_CollectionId_id(ctx context.Context, field graphql.CollectedField, obj *model.CodeWithCollectionID) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Code_with_CollectionId_id(ctx, field)
 	if err != nil {
@@ -3227,6 +3280,50 @@ func (ec *executionContext) _Code_with_CollectionId_collection_id(ctx context.Co
 }
 
 func (ec *executionContext) fieldContext_Code_with_CollectionId_collection_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Code_with_CollectionId",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Code_with_CollectionId_user_id(ctx context.Context, field graphql.CollectedField, obj *model.CodeWithCollectionID) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Code_with_CollectionId_user_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Code_with_CollectionId_user_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Code_with_CollectionId",
 		Field:      field,
@@ -4504,6 +4601,8 @@ func (ec *executionContext) fieldContext_Mutation_getCollection(ctx context.Cont
 				return ec.fieldContext_Code_with_CollectionId_access(ctx, field)
 			case "collection_id":
 				return ec.fieldContext_Code_with_CollectionId_collection_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Code_with_CollectionId_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Code_with_CollectionId", field.Name)
 		},
@@ -5400,6 +5499,8 @@ func (ec *executionContext) fieldContext_Query_getAllCodes(ctx context.Context, 
 				return ec.fieldContext_Code_updated_at(ctx, field)
 			case "access":
 				return ec.fieldContext_Code_access(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Code_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
 		},
@@ -5479,6 +5580,8 @@ func (ec *executionContext) fieldContext_Query_GetAllCodesByKeyword(ctx context.
 				return ec.fieldContext_Code_updated_at(ctx, field)
 			case "access":
 				return ec.fieldContext_Code_access(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Code_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
 		},
@@ -5558,6 +5661,8 @@ func (ec *executionContext) fieldContext_Query_GetAllCodesSortedStar(ctx context
 				return ec.fieldContext_Code_updated_at(ctx, field)
 			case "access":
 				return ec.fieldContext_Code_access(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Code_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
 		},
@@ -5637,6 +5742,8 @@ func (ec *executionContext) fieldContext_Query_GetAllCodesSortedAccess(ctx conte
 				return ec.fieldContext_Code_updated_at(ctx, field)
 			case "access":
 				return ec.fieldContext_Code_access(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Code_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
 		},
@@ -5716,6 +5823,8 @@ func (ec *executionContext) fieldContext_Query_getAllCodesByTag(ctx context.Cont
 				return ec.fieldContext_Code_updated_at(ctx, field)
 			case "access":
 				return ec.fieldContext_Code_access(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Code_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
 		},
@@ -5748,7 +5857,7 @@ func (ec *executionContext) _Query_getAllOwnCodes(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllOwnCodes(rctx, fc.Args["user_id"].(int), fc.Args["limit"].(int), fc.Args["skip"].(int))
+		return ec.resolvers.Query().GetAllOwnCodes(rctx, fc.Args["limit"].(int), fc.Args["skip"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5795,6 +5904,8 @@ func (ec *executionContext) fieldContext_Query_getAllOwnCodes(ctx context.Contex
 				return ec.fieldContext_Code_updated_at(ctx, field)
 			case "access":
 				return ec.fieldContext_Code_access(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Code_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
 		},
@@ -5874,6 +5985,8 @@ func (ec *executionContext) fieldContext_Query_getCode(ctx context.Context, fiel
 				return ec.fieldContext_Code_updated_at(ctx, field)
 			case "access":
 				return ec.fieldContext_Code_access(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Code_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Code", field.Name)
 		},
@@ -5955,6 +6068,8 @@ func (ec *executionContext) fieldContext_Query_getAllCollection(ctx context.Cont
 				return ec.fieldContext_Code_with_CollectionId_access(ctx, field)
 			case "collection_id":
 				return ec.fieldContext_Code_with_CollectionId_collection_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Code_with_CollectionId_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Code_with_CollectionId", field.Name)
 		},
@@ -6036,6 +6151,8 @@ func (ec *executionContext) fieldContext_Query_getAllCollectionBySearch(ctx cont
 				return ec.fieldContext_Code_with_CollectionId_access(ctx, field)
 			case "collection_id":
 				return ec.fieldContext_Code_with_CollectionId_collection_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Code_with_CollectionId_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Code_with_CollectionId", field.Name)
 		},
@@ -8808,6 +8925,13 @@ func (ec *executionContext) _Code(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "user_id":
+
+			out.Values[i] = ec._Code_user_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8909,6 +9033,13 @@ func (ec *executionContext) _Code_with_CollectionId(ctx context.Context, sel ast
 		case "collection_id":
 
 			out.Values[i] = ec._Code_with_CollectionId_collection_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "user_id":
+
+			out.Values[i] = ec._Code_with_CollectionId_user_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++

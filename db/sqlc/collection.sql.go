@@ -109,19 +109,25 @@ SELECT DISTINCT c.id, col.id, c.id, c.username, c.code, c.img, c.description, c.
 INNER JOIN users AS u ON col.user_id = u.id
 INNER JOIN codes AS c ON col.code_id = c.id
 WHERE col.user_id = $1 AND
-    (c.username LIKE $2 OR c.code LIKE $3 OR c.description LIKE $4)
+    (
+    c.username LIKE $2 OR
+    c.code LIKE $3 OR
+    c.description LIKE $4 OR
+    $5 = ANY(tags)
+    )
 ORDER BY created_at DESC
-LIMIT $5
-OFFSET $6
+LIMIT $6
+OFFSET $7
 `
 
 type GetAllCollectionsBySearchParams struct {
-	UserID      int64  `json:"user_id"`
-	Username    string `json:"username"`
-	Code        string `json:"code"`
-	Description string `json:"description"`
-	Limit       int32  `json:"limit"`
-	Offset      int32  `json:"offset"`
+	UserID      int64       `json:"user_id"`
+	Username    string      `json:"username"`
+	Code        string      `json:"code"`
+	Description string      `json:"description"`
+	Column5     interface{} `json:"column_5"`
+	Limit       int32       `json:"limit"`
+	Offset      int32       `json:"offset"`
 }
 
 type GetAllCollectionsBySearchRow struct {
@@ -146,6 +152,7 @@ func (q *Queries) GetAllCollectionsBySearch(ctx context.Context, arg GetAllColle
 		arg.Username,
 		arg.Code,
 		arg.Description,
+		arg.Column5,
 		arg.Limit,
 		arg.Offset,
 	)

@@ -94,6 +94,30 @@ func (r *mutationResolver) GetCollectionResolver(ctx context.Context, id int) (*
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
+	// user id get from redis
+	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	fields := strings.Split(authorizationHeader, " ")
+
+	var username string
+	if fields[1] != "undefined" {
+		accessToken := fields[1]
+
+		key, _ := cryptography.HashPassword(accessToken)
+		// redis value get
+		redisValue := session.GetRedis(gc, key)
+		// string processing
+		s := strings.Split(redisValue.String(), ",")
+		s = strings.Split(s[1], ":")
+		username = s[1]
+		username = username[1:]
+		username = username[:len(username)-1]
+	}
+
+	user, err := r.store.GetUserByUsername(gc, username)
+	if err != nil {
+		user.ID = 0
+	}
+
 	code, err := r.store.GetCollection(gc, int64(id))
 	if err != nil {
 		return nil, fmt.Errorf("GetCollectionResolver error : %v", err)
@@ -117,6 +141,7 @@ func (r *mutationResolver) GetCollectionResolver(ctx context.Context, id int) (*
 		CreatedAt:   code.CreatedAt,
 		UpdatedAt:   code.UpdatedAt,
 		Access:      int(code.Access),
+		UserID:      int(user.ID),
 	}
 
 	return res, nil
@@ -209,6 +234,7 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 			UpdatedAt:    col.UpdatedAt,
 			Access:       int(col.Access),
 			CollectionID: int(col.ID_2),
+			UserID:       int(user.ID),
 		}
 	}
 
@@ -254,6 +280,7 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 		Username:    "%" + keyword + "%",
 		Code:        "%" + keyword + "%",
 		Description: "%" + keyword + "%",
+		Column5:     keyword,
 		Limit:       int32(limit),
 		Offset:      int32(skip),
 	}
@@ -284,6 +311,7 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 			UpdatedAt:    col.UpdatedAt,
 			Access:       int(col.Access),
 			CollectionID: int(col.ID_2),
+			UserID:       int(user.ID),
 		}
 	}
 

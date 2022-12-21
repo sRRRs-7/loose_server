@@ -234,8 +234,8 @@ func (r *queryResolver) GetAllCodesByTag(ctx context.Context, tags []*string, so
 	return res, nil
 }
 
-func (r *queryResolver) GetAllOwnCodes(ctx context.Context, userID int, limit int, skip int) ([]*model.Code, error) {
-	res, err := r.GetAllOwnCodesResolver(ctx, userID, limit, skip)
+func (r *queryResolver) GetAllOwnCodes(ctx context.Context, limit int, skip int) ([]*model.Code, error) {
+	res, err := r.GetAllOwnCodesResolver(ctx, limit, skip)
 	if err != nil {
 		return nil, fmt.Errorf("GetOwnCodes error: %v", err)
 	}
@@ -282,13 +282,3 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *mutationResolver) GetUser(ctx context.Context, userID int) (*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
-}

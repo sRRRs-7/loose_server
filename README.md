@@ -1,8 +1,8 @@
 task
 postgres store image type OK
 
-collection table distinct
 mock test
+collection table distinct
 github actions
 AWS (EC2, ECS)
 terraform

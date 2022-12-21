@@ -25,6 +25,7 @@ type Code struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	Access      int       `json:"access"`
+	UserID      int       `json:"user_id"`
 }
 
 func (Code) IsNode() {}
@@ -42,6 +43,7 @@ type CodeWithCollectionID struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 	Access       int       `json:"access"`
 	CollectionID int       `json:"collection_id"`
+	UserID       int       `json:"user_id"`
 }
 
 func (CodeWithCollectionID) IsNode() {}
