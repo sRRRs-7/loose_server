@@ -2,15 +2,16 @@ task
 postgres store image type OK
 
 mock test
-collection table distinct
 github actions
 AWS (EC2, ECS)
 terraform
-mecab
-hebon
 transaction update access sqlc
 HTTPS + TOKEN + FORM auth
 specification
+
+mecab on hold
+hebon on hold
+collection table distinct on hold
 
 memo
 docker

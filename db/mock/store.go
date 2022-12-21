@@ -35,21 +35,6 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
-// CountStar mocks base method.
-func (m *MockStore) CountStar(arg0 context.Context, arg1 int64) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CountStar", arg0, arg1)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CountStar indicates an expected call of CountStar.
-func (mr *MockStoreMockRecorder) CountStar(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountStar", reflect.TypeOf((*MockStore)(nil).CountStar), arg0, arg1)
-}
-
 // CreateAdminUser mocks base method.
 func (m *MockStore) CreateAdminUser(arg0 context.Context, arg1 db.CreateAdminUserParams) error {
 	m.ctrl.T.Helper()
@@ -106,20 +91,6 @@ func (mr *MockStoreMockRecorder) CreateMedia(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMedia", reflect.TypeOf((*MockStore)(nil).CreateMedia), arg0, arg1)
 }
 
-// CreateStar mocks base method.
-func (m *MockStore) CreateStar(arg0 context.Context, arg1 db.CreateStarParams) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateStar", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateStar indicates an expected call of CreateStar.
-func (mr *MockStoreMockRecorder) CreateStar(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStar", reflect.TypeOf((*MockStore)(nil).CreateStar), arg0, arg1)
-}
-
 // CreateUser mocks base method.
 func (m *MockStore) CreateUser(arg0 context.Context, arg1 db.CreateUserParams) error {
 	m.ctrl.T.Helper()
@@ -174,20 +145,6 @@ func (m *MockStore) DeleteMedia(arg0 context.Context, arg1 int64) error {
 func (mr *MockStoreMockRecorder) DeleteMedia(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMedia", reflect.TypeOf((*MockStore)(nil).DeleteMedia), arg0, arg1)
-}
-
-// DeleteStar mocks base method.
-func (m *MockStore) DeleteStar(arg0 context.Context, arg1 db.DeleteStarParams) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteStar", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteStar indicates an expected call of DeleteStar.
-func (mr *MockStoreMockRecorder) DeleteStar(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteStar", reflect.TypeOf((*MockStore)(nil).DeleteStar), arg0, arg1)
 }
 
 // DeleteUser mocks base method.
@@ -309,6 +266,36 @@ func (mr *MockStoreMockRecorder) GetAllCollections(arg0, arg1 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCollections", reflect.TypeOf((*MockStore)(nil).GetAllCollections), arg0, arg1)
 }
 
+// GetAllCollectionsBySearch mocks base method.
+func (m *MockStore) GetAllCollectionsBySearch(arg0 context.Context, arg1 db.GetAllCollectionsBySearchParams) ([]*db.GetAllCollectionsBySearchRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllCollectionsBySearch", arg0, arg1)
+	ret0, _ := ret[0].([]*db.GetAllCollectionsBySearchRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllCollectionsBySearch indicates an expected call of GetAllCollectionsBySearch.
+func (mr *MockStoreMockRecorder) GetAllCollectionsBySearch(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCollectionsBySearch", reflect.TypeOf((*MockStore)(nil).GetAllCollectionsBySearch), arg0, arg1)
+}
+
+// GetAllOwnCodes mocks base method.
+func (m *MockStore) GetAllOwnCodes(arg0 context.Context, arg1 db.GetAllOwnCodesParams) ([]*db.Codes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllOwnCodes", arg0, arg1)
+	ret0, _ := ret[0].([]*db.Codes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllOwnCodes indicates an expected call of GetAllOwnCodes.
+func (mr *MockStoreMockRecorder) GetAllOwnCodes(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllOwnCodes", reflect.TypeOf((*MockStore)(nil).GetAllOwnCodes), arg0, arg1)
+}
+
 // GetCode mocks base method.
 func (m *MockStore) GetCode(arg0 context.Context, arg1 int64) (*db.Codes, error) {
 	m.ctrl.T.Helper()
@@ -354,19 +341,34 @@ func (mr *MockStoreMockRecorder) GetMedia(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMedia", reflect.TypeOf((*MockStore)(nil).GetMedia), arg0, arg1)
 }
 
-// GetUser mocks base method.
-func (m *MockStore) GetUser(arg0 context.Context, arg1 string) (int64, error) {
+// GetUserByID mocks base method.
+func (m *MockStore) GetUserByID(arg0 context.Context, arg1 int64) (*db.Users, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUser", arg0, arg1)
-	ret0, _ := ret[0].(int64)
+	ret := m.ctrl.Call(m, "GetUserByID", arg0, arg1)
+	ret0, _ := ret[0].(*db.Users)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUser indicates an expected call of GetUser.
-func (mr *MockStoreMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call {
+// GetUserByID indicates an expected call of GetUserByID.
+func (mr *MockStoreMockRecorder) GetUserByID(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockStore)(nil).GetUser), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockStore)(nil).GetUserByID), arg0, arg1)
+}
+
+// GetUserByUsername mocks base method.
+func (m *MockStore) GetUserByUsername(arg0 context.Context, arg1 string) (*db.Users, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByUsername", arg0, arg1)
+	ret0, _ := ret[0].(*db.Users)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByUsername indicates an expected call of GetUserByUsername.
+func (mr *MockStoreMockRecorder) GetUserByUsername(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockStore)(nil).GetUserByUsername), arg0, arg1)
 }
 
 // ListMedia mocks base method.
