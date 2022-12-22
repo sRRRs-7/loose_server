@@ -62,7 +62,7 @@ func main() {
 	// initialize sqlc instance
 	store := db.NewStore(pool)
 	// all instance connect
-	resolver, tokenMaker, err := graph.NewResolver(config, store)
+	resolver, tokenMaker, err := graph.NewResolver(config, store, pool)
 	if err != nil {
 		log.Fatalf("new resolver error: %v", err)
 	}

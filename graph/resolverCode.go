@@ -61,7 +61,7 @@ func (r *mutationResolver) AdminCreateCodeResolver(ctx context.Context, username
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "crete a code OK",
+		Message: "AdminCreateCode OK",
 	}
 
 	return res, nil
@@ -93,8 +93,13 @@ func (r *mutationResolver) CreateCodeResolver(ctx context.Context, code string, 
 	username := utils.GetUsername(redisValue)
 
 	// tags str convert lower case
-	tag := make([]string, len(tags))
-	for i, t := range tags {
+	tag := make([]string, 0)
+	for i := range tags {
+		if utils.CheckRegex("\\S", tags[i]) {
+			tag = append(tag, tags[i])
+		}
+	}
+	for i, t := range tag {
 		tag[i] = strings.ToLower(t)
 	}
 
@@ -124,18 +129,13 @@ func (r *mutationResolver) CreateCodeResolver(ctx context.Context, code string, 
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "crete a code OK",
+		Message: "CreateCode OK",
 	}
 
 	return res, nil
 }
 
 func (r *mutationResolver) UpdateCodesResolver(ctx context.Context, id int, code string, img string, description string, performance string, tags []string) (*model.MutationResponse, error) {
-	res := &model.MutationResponse{
-		IsError: false,
-		Message: "update a code OK",
-	}
-
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
@@ -153,7 +153,12 @@ func (r *mutationResolver) UpdateCodesResolver(ctx context.Context, id int, code
 
 	err = r.store.UpdateCode(gc, args)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get a code: %v", err)
+		return nil, fmt.Errorf("failed to UpdateCodes: %v", err)
+	}
+
+	res := &model.MutationResponse{
+		IsError: false,
+		Message: "UpdateCodes OK",
 	}
 
 	return res, nil
@@ -167,7 +172,7 @@ func (r *mutationResolver) UpdateAccessResolver(ctx context.Context, id, access 
 
 	c, err := r.store.GetCode(gc, int64(id))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get code error in update access: %v", err)
+		return nil, fmt.Errorf("failed to GetCode error in UpdateAccessResolver: %v", err)
 	}
 
 	args := db.UpdateAccessParams{
@@ -177,12 +182,12 @@ func (r *mutationResolver) UpdateAccessResolver(ctx context.Context, id, access 
 
 	err = r.store.UpdateAccess(gc, args)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update a code access count : %v", err)
+		return nil, fmt.Errorf("failed to UpdateAccess : %v", err)
 	}
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "update a code access count OK",
+		Message: "UpdateAccess OK",
 	}
 
 	return res, nil
@@ -193,24 +198,29 @@ func (r *mutationResolver) UpdateStarResolver(ctx context.Context, codeID int) (
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
-
+	// bearer auth
 	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
 	fields := strings.Split(authorizationHeader, " ")
 	accessToken := fields[1]
-
+	// token hash
 	key, err := cryptography.HashPassword(accessToken)
 	if err != nil {
 		return nil, fmt.Errorf("UpdateStarResolver error: %v", err)
 	}
-
 	// redis value get
 	redisValue := session.GetRedis(gc, key)
 	if redisValue == nil {
 		return nil, fmt.Errorf("UpdateStarResolver error in get redis value : %v", err)
 	}
-
 	// string processing
 	username := utils.GetUsername(redisValue)
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in UpdateStarResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	// get user id
 	user, err := r.store.GetUserByUsername(gc, username)
@@ -234,21 +244,20 @@ func (r *mutationResolver) UpdateStarResolver(ctx context.Context, codeID int) (
 	if err != nil {
 		return nil, fmt.Errorf("failed to update a star : %v", err)
 	}
+	//commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in UpdateStarResolver : %v", err)
+	}
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "update a star OK",
+		Message: "UpdateStar OK",
 	}
 
 	return res, nil
 }
 
 func (r *mutationResolver) DeleteCodeResolver(ctx context.Context, id int) (*model.MutationResponse, error) {
-	res := &model.MutationResponse{
-		IsError: false,
-		Message: "delete a code OK",
-	}
-
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
@@ -259,6 +268,10 @@ func (r *mutationResolver) DeleteCodeResolver(ctx context.Context, id int) (*mod
 		return nil, fmt.Errorf("failed to delete a code: %v", err)
 	}
 
+	res := &model.MutationResponse{
+		IsError: false,
+		Message: "DeleteCode OK",
+	}
 	return res, nil
 }
 
@@ -275,17 +288,19 @@ func (r *queryResolver) GetCodeResolver(ctx context.Context, id int) (*model.Cod
 	var username string
 	if fields[1] != "undefined" {
 		accessToken := fields[1]
-
 		key, _ := cryptography.HashPassword(accessToken)
 		// redis value get
 		redisValue := session.GetRedis(gc, key)
 		// string processing
-		s := strings.Split(redisValue.String(), ",")
-		s = strings.Split(s[1], ":")
-		username = s[1]
-		username = username[1:]
-		username = username[:len(username)-1]
+		username = utils.GetUsername(redisValue)
 	}
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in GetCodeResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
@@ -295,6 +310,10 @@ func (r *queryResolver) GetCodeResolver(ctx context.Context, id int) (*model.Cod
 	code, err := r.store.GetCode(gc, int64(id))
 	if err != nil {
 		return nil, fmt.Errorf("failed to GetCode: %v", err)
+	}
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in GetCodeResolver : %v", err)
 	}
 
 	stars := make([]int, len(code.Star))
@@ -336,17 +355,19 @@ func (r *queryResolver) GetAllCodesByTagResolver(ctx context.Context, tags []*st
 	var username string
 	if fields[1] != "undefined" {
 		accessToken := fields[1]
-
 		key, _ := cryptography.HashPassword(accessToken)
 		// redis value get
 		redisValue := session.GetRedis(gc, key)
 		// string processing
-		s := strings.Split(redisValue.String(), ",")
-		s = strings.Split(s[1], ":")
-		username = s[1]
-		username = username[1:]
-		username = username[:len(username)-1]
+		username = utils.GetUsername(redisValue)
 	}
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in GetAllCodesByTagResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
@@ -375,7 +396,11 @@ func (r *queryResolver) GetAllCodesByTagResolver(ctx context.Context, tags []*st
 
 	codes, err := r.store.GetAllCodesByTag(gc, args)
 	if err != nil {
-		return nil, fmt.Errorf("GetAllCodesByTagsResolver failed : %v", err)
+		return nil, fmt.Errorf("GetAllCodesByTagResolver failed : %v", err)
+	}
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in GetAllCodesByTagResolver : %v", err)
 	}
 
 	if sortBy.String() != EnumSort.Asc && sortBy.String() != EnumSort.Desc {
@@ -432,12 +457,15 @@ func (r *queryResolver) GetAllCodesByKeywordResolver(ctx context.Context, keywor
 		// redis value get
 		redisValue := session.GetRedis(gc, key)
 		// string processing
-		s := strings.Split(redisValue.String(), ",")
-		s = strings.Split(s[1], ":")
-		username = s[1]
-		username = username[1:]
-		username = username[:len(username)-1]
+		username = utils.GetUsername(redisValue)
 	}
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in GetAllCodesByKeywordResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
@@ -455,6 +483,11 @@ func (r *queryResolver) GetAllCodesByKeywordResolver(ctx context.Context, keywor
 	codes, err := r.store.GetAllCodesByKeyword(gc, args)
 	if err != nil {
 		return nil, fmt.Errorf("GetAllCodesByKeywordResolver failed : %v", err)
+	}
+
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in GetAllCodesByKeywordResolver : %v", err)
 	}
 
 	list := make([]*model.Code, len(codes))
@@ -496,17 +529,19 @@ func (r *queryResolver) GetAllCodesSortedStarResolver(ctx context.Context, limit
 	var username string
 	if fields[1] != "undefined" {
 		accessToken := fields[1]
-
 		key, _ := cryptography.HashPassword(accessToken)
 		// redis value get
 		redisValue := session.GetRedis(gc, key)
 		// string processing
-		s := strings.Split(redisValue.String(), ",")
-		s = strings.Split(s[1], ":")
-		username = s[1]
-		username = username[1:]
-		username = username[:len(username)-1]
+		username = utils.GetUsername(redisValue)
 	}
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in GetAllCodesSortedStarResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
@@ -520,7 +555,12 @@ func (r *queryResolver) GetAllCodesSortedStarResolver(ctx context.Context, limit
 
 	codes, err := r.store.GetAllCodesSortedStar(gc, args)
 	if err != nil {
-		return nil, fmt.Errorf("GetAllCodesSortedStarResolver failed : %v", err)
+		return nil, fmt.Errorf("failed to GetAllCodesSortedStarResolver: %v", err)
+	}
+
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in GetAllCodesSortedStarResolver : %v", err)
 	}
 
 	list := make([]*model.Code, len(codes))
@@ -562,17 +602,19 @@ func (r *queryResolver) GetAllCodesSortedAccessResolver(ctx context.Context, lim
 	var username string
 	if fields[1] != "undefined" {
 		accessToken := fields[1]
-
 		key, _ := cryptography.HashPassword(accessToken)
 		// redis value get
 		redisValue := session.GetRedis(gc, key)
 		// string processing
-		s := strings.Split(redisValue.String(), ",")
-		s = strings.Split(s[1], ":")
-		username = s[1]
-		username = username[1:]
-		username = username[:len(username)-1]
+		username = utils.GetUsername(redisValue)
 	}
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in GetAllCodesSortedAccessResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
@@ -587,6 +629,11 @@ func (r *queryResolver) GetAllCodesSortedAccessResolver(ctx context.Context, lim
 	codes, err := r.store.GetAllCodesSortedAccess(gc, args)
 	if err != nil {
 		return nil, fmt.Errorf("GetAllCodesSortedAccessResolver failed : %v", err)
+	}
+
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in GetAllCodesSortedAccessResolver : %v", err)
 	}
 
 	list := make([]*model.Code, len(codes))
@@ -628,17 +675,19 @@ func (r *queryResolver) GetAllOwnCodesResolver(ctx context.Context, limit int, s
 	var username string
 	if fields[1] != "undefined" {
 		accessToken := fields[1]
-
 		key, _ := cryptography.HashPassword(accessToken)
 		// redis value get
 		redisValue := session.GetRedis(gc, key)
 		// string processing
-		s := strings.Split(redisValue.String(), ",")
-		s = strings.Split(s[1], ":")
-		username = s[1]
-		username = username[1:]
-		username = username[:len(username)-1]
+		username = utils.GetUsername(redisValue)
 	}
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in GetAllOwnCodesResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
@@ -654,6 +703,11 @@ func (r *queryResolver) GetAllOwnCodesResolver(ctx context.Context, limit int, s
 	codes, err := r.store.GetAllOwnCodes(gc, arg)
 	if err != nil {
 		return nil, fmt.Errorf("GetAllOwnCodesResolver failed : %v", err)
+	}
+
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in GetAllOwnCodesResolver : %v", err)
 	}
 
 	list := make([]*model.Code, len(codes))
@@ -701,12 +755,15 @@ func (r *queryResolver) GetAllCodesResolver(ctx context.Context, limit int, skip
 		// redis value get
 		redisValue := session.GetRedis(gc, key)
 		// string processing
-		s := strings.Split(redisValue.String(), ",")
-		s = strings.Split(s[1], ":")
-		username = s[1]
-		username = username[1:]
-		username = username[:len(username)-1]
+		username = utils.GetUsername(redisValue)
 	}
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in GetAllCodesResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
@@ -720,7 +777,12 @@ func (r *queryResolver) GetAllCodesResolver(ctx context.Context, limit int, skip
 
 	codes, err := r.store.GetAllCodes(gc, args)
 	if err != nil {
-		return nil, fmt.Errorf("failed to GetAllCode: %v", err)
+		return nil, fmt.Errorf("failed to GetAllCode in GetAllCodesResolver: %v", err)
+	}
+
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in GetAllCodesResolver: %v", err)
 	}
 
 	list := make([]*model.Code, len(codes))

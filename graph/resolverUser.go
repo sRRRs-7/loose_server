@@ -40,7 +40,7 @@ func (r *mutationResolver) CreateUserResolver(ctx context.Context, username stri
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "create a user OK",
+		Message: "CreateUser OK",
 	}
 
 	return res, nil
@@ -101,7 +101,7 @@ func (r *mutationResolver) UpdateUserResolver(ctx context.Context, username stri
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "update a user OK",
+		Message: "UpdateUser OK",
 	}
 
 	return res, nil
@@ -113,6 +113,13 @@ func (r *mutationResolver) DeleteUserResolver(ctx context.Context, username stri
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in DeleteUserResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
+
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
 		return nil, fmt.Errorf("GetUser error in deleteUserResolver: %v", err)
@@ -123,9 +130,14 @@ func (r *mutationResolver) DeleteUserResolver(ctx context.Context, username stri
 		return nil, fmt.Errorf("delete User error: %v", err)
 	}
 
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in DeleteUserResolver : %v", err)
+	}
+
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "delete a user OK",
+		Message: "DeleteUser OK",
 	}
 
 	return res, nil

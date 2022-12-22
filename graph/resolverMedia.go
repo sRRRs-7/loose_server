@@ -32,7 +32,7 @@ func (r *mutationResolver) CreateMediaResolver(ctx context.Context, title string
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "crete a media OK",
+		Message: "CreateMedia OK",
 	}
 
 	return res, nil
@@ -59,7 +59,7 @@ func (r *mutationResolver) UpdateMediaResolver(ctx context.Context, id string, t
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "update a media OK",
+		Message: "UpdateMedia OK",
 	}
 
 	return res, nil
@@ -101,7 +101,7 @@ func (r *mutationResolver) DeleteMediaResolver(ctx context.Context, id int) (*mo
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "delete a media OK",
+		Message: "DeleteMedia OK",
 	}
 
 	return res, nil

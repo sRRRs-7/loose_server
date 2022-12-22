@@ -12,7 +12,7 @@ type SQLStore struct {
 	db *pgxpool.Pool
 }
 
-func NewStore(pool *pgxpool.Pool) Store {
+func NewStore(pool *pgxpool.Pool) *SQLStore {
 	return &SQLStore{
 		Queries: New(pool),
 		db:      pool,

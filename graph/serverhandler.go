@@ -6,6 +6,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sRRRs-7/loose_style.git/cfg"
 	db "github.com/sRRRs-7/loose_style.git/db/sqlc"
 	"github.com/sRRRs-7/loose_style.git/graph/dataloaders"
@@ -14,7 +15,7 @@ import (
 )
 
 // create resolver instance
-func NewResolver(config cfg.Config, store db.Store) (*Resolver, token.Maker, error) {
+func NewResolver(config cfg.Config, store db.Store, pool *pgxpool.Pool) (*Resolver, token.Maker, error) {
 	// tokenMaker instance
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
@@ -28,6 +29,7 @@ func NewResolver(config cfg.Config, store db.Store) (*Resolver, token.Maker, err
 		tokenMaker:  tokenMaker,
 		config:      config,
 		dataloaders: *dl,
+		tx:          pool,
 	}
 
 	return resolver, tokenMaker, nil
@@ -43,6 +45,7 @@ func graphqlHandler(r *Resolver) gin.HandlerFunc {
 				tokenMaker:  r.tokenMaker,
 				config:      r.config,
 				dataloaders: r.dataloaders,
+				tx:          r.tx,
 			}}))
 
 	return func(c *gin.Context) {

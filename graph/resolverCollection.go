@@ -9,6 +9,7 @@ import (
 	db "github.com/sRRRs-7/loose_style.git/db/sqlc"
 	"github.com/sRRRs-7/loose_style.git/graph/model"
 	"github.com/sRRRs-7/loose_style.git/session.go"
+	"github.com/sRRRs-7/loose_style.git/utils"
 )
 
 // mutation
@@ -26,12 +27,12 @@ func (r *mutationResolver) CreateAdminCollectionResolver(ctx context.Context, us
 
 	err = r.store.CreateCollection(gc, args)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create cart: %v", err)
+		return nil, fmt.Errorf("failed to create collection: %v", err)
 	}
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "crete a admin collection OK",
+		Message: "CreateAdminCollection OK",
 	}
 
 	return res, nil
@@ -56,18 +57,21 @@ func (r *mutationResolver) CreateCollectionResolver(ctx context.Context, codeID 
 	// redis value get
 	redisValue := session.GetRedis(gc, key)
 	if redisValue == nil {
-		return nil, fmt.Errorf("get all cart item error get redis value is nil : %v", err)
+		return nil, fmt.Errorf("GetAllCollection error for redis value is nil: %v", err)
 	}
 	// string processing
-	s := strings.Split(redisValue.String(), ",")
-	s = strings.Split(s[1], ":")
-	username := s[1]
-	username = username[1:]
-	username = username[:len(username)-1]
+	username := utils.GetUsername(redisValue)
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in CreateCollectionResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
-		return nil, fmt.Errorf("GetUser in all collection error : %v", err)
+		return nil, fmt.Errorf("GetUser error in CreateCollectionResolver: %v", err)
 	}
 
 	args := db.CreateCollectionParams{
@@ -79,10 +83,14 @@ func (r *mutationResolver) CreateCollectionResolver(ctx context.Context, codeID 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create collection: %v", err)
 	}
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in CreateCollectionResolver : %v", err)
+	}
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "crete a collection OK",
+		Message: "CreateCollection OK",
 	}
 
 	return res, nil
@@ -101,17 +109,19 @@ func (r *mutationResolver) GetCollectionResolver(ctx context.Context, id int) (*
 	var username string
 	if fields[1] != "undefined" {
 		accessToken := fields[1]
-
 		key, _ := cryptography.HashPassword(accessToken)
 		// redis value get
 		redisValue := session.GetRedis(gc, key)
 		// string processing
-		s := strings.Split(redisValue.String(), ",")
-		s = strings.Split(s[1], ":")
-		username = s[1]
-		username = username[1:]
-		username = username[:len(username)-1]
+		username = utils.GetUsername(redisValue)
 	}
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in GetCollectionResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
@@ -121,6 +131,10 @@ func (r *mutationResolver) GetCollectionResolver(ctx context.Context, id int) (*
 	code, err := r.store.GetCollection(gc, int64(id))
 	if err != nil {
 		return nil, fmt.Errorf("GetCollectionResolver error : %v", err)
+	}
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in GetCollectionResolver : %v", err)
 	}
 
 	stars := make([]int, len(code.Star))
@@ -160,7 +174,7 @@ func (r *mutationResolver) DeleteCollectionResolver(ctx context.Context, id int)
 
 	res := &model.MutationResponse{
 		IsError: false,
-		Message: "delete a collection OK",
+		Message: "DeleteCollection OK",
 	}
 
 	return res, nil
@@ -182,24 +196,25 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	if err != nil {
 		return nil, fmt.Errorf("GetAllCollectionResolver error: %v", err)
 	}
-
 	// redis value get
 	redisValue := session.GetRedis(gc, key)
 	if redisValue == nil {
 		return nil, fmt.Errorf("GetAllCollectionResolver error in get redis value : %v", err)
 	}
-
 	// string processing
-	s := strings.Split(redisValue.String(), ",")
-	s = strings.Split(s[1], ":")
-	username := s[1]
-	username = username[1:]
-	username = username[:len(username)-1]
+	username := utils.GetUsername(redisValue)
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in GetAllCollectionResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	// get user id
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
-		return nil, fmt.Errorf("GetUser error in GetAllCollectionBySearchResolver: %v", err)
+		return nil, fmt.Errorf("GetUser error in GetAllCollectionResolver: %v", err)
 	}
 
 	args := db.GetAllCollectionsParams{
@@ -211,7 +226,12 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 	// get all collection
 	collections, err := r.store.GetAllCollections(gc, args)
 	if err != nil {
-		return nil, fmt.Errorf("GetCollectionBySearchResolver error : %v", err)
+		return nil, fmt.Errorf("GetAllCollectionResolver error : %v", err)
+	}
+
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in GetAllCollectionResolver : %v", err)
 	}
 
 	convertCol := make([]*model.CodeWithCollectionID, len(collections))
@@ -255,24 +275,25 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 	if err != nil {
 		return nil, fmt.Errorf("GetAllCollectionBySearchResolver error: %v", err)
 	}
-
 	// redis value get
 	redisValue := session.GetRedis(gc, key)
 	if redisValue == nil {
-		return nil, fmt.Errorf("GetAllCartCollectionBySearchResolver error in get redis value : %v", err)
+		return nil, fmt.Errorf("GetAllCollectionBySearchResolver error for get redis value: %v", err)
 	}
-
 	// string processing
-	s := strings.Split(redisValue.String(), ",")
-	s = strings.Split(s[1], ":")
-	username := s[1]
-	username = username[1:]
-	username = username[:len(username)-1]
+	username := utils.GetUsername(redisValue)
+
+	// transaction
+	tx, err := r.tx.Begin(gc)
+	if err != nil {
+		return nil, fmt.Errorf("transaction begin error in GetAllCollectionBySearchResolver: %v", err)
+	}
+	defer tx.Rollback(gc)
 
 	// get user
 	user, err := r.store.GetUserByUsername(gc, username)
 	if err != nil {
-		return nil, fmt.Errorf("GetUser error in GetAllCollectionSearchResolver: %v", err)
+		return nil, fmt.Errorf("GetUser error in GetAllCollectionBySearchResolver: %v", err)
 	}
 
 	args := db.GetAllCollectionsBySearchParams{
@@ -288,7 +309,12 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 	// get all collection
 	collections, err := r.store.GetAllCollectionsBySearch(gc, args)
 	if err != nil {
-		return nil, fmt.Errorf("GetCollectionBySearchResolver error : %v", err)
+		return nil, fmt.Errorf("GetAllCollectionBySearch error: %v", err)
+	}
+
+	// commit
+	if err = tx.Commit(gc); err != nil {
+		return nil, fmt.Errorf("transaction commit error in GetAllCollectionBySearchResolver : %v", err)
 	}
 
 	convertCol := make([]*model.CodeWithCollectionID, len(collections))
