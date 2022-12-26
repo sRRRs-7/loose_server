@@ -17,6 +17,9 @@ memo
 docker
 sql_migrate.yml -> localhost -> postgres
 
+graphql adjustment -> query include 2 more resolver
+dataloader introduce
+
 - log in
 - log out
 - cookie
