@@ -3,6 +3,7 @@ package graph
 import (
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"time"
 
@@ -15,14 +16,25 @@ import (
 // initialize Gin
 func (r *Resolver) GinRouter(tokenMaker token.Maker) {
 	router := gin.Default()
-	router.SetTrustedProxies([]string{"192.168.1.2"})
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:8080"},
+		AllowOrigins: []string{
+			"http://localhost:80",
+			"http://localhost:3000",
+			"http://localhost:8080",
+			"http://command-style.com",
+			"https://command-style.com",
+		},
 		AllowMethods:     []string{"POST", "GET", "PUT", "DELETE", "OPTIONS", "HEAD"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "Access-Control-Allow-Credentials", "Access-Control-Allow-Headers"},
 		AllowCredentials: true,
-		MaxAge:           5 * time.Second,
+		MaxAge:           60 * time.Minute,
 	}))
+
+	// health check router
+	healthCheckRouter := router.Group("/api")
+	healthCheckRouter.GET("/health_check", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
+	})
 
 	// bearer auth router
 	playGroundRouter := router.Group("/")

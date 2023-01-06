@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sRRRs-7/loose_style.git/session.go"
+	"github.com/sRRRs-7/loose_style.git/session"
 )
 
 func (r *mutationResolver) CreateTokenResolver(ctx context.Context, username string) (string, error) {

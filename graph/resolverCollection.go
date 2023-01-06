@@ -8,7 +8,7 @@ import (
 	"github.com/sRRRs-7/loose_style.git/cryptography"
 	db "github.com/sRRRs-7/loose_style.git/db/sqlc"
 	"github.com/sRRRs-7/loose_style.git/graph/model"
-	"github.com/sRRRs-7/loose_style.git/session.go"
+	"github.com/sRRRs-7/loose_style.git/session"
 	"github.com/sRRRs-7/loose_style.git/utils"
 )
 

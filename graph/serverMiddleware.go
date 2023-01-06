@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sRRRs-7/loose_style.git/session.go"
+	"github.com/sRRRs-7/loose_style.git/session"
 	"github.com/sRRRs-7/loose_style.git/token"
 )
 

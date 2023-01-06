@@ -1,7 +1,6 @@
 package cfg
 
 import (
-	"flag"
 	"time"
 
 	"github.com/spf13/viper"
@@ -27,18 +26,9 @@ type Config struct {
 
 // LoadConfig reads the configuration file or environment variables
 func LoadConfig(path string) (config Config, err error) {
-	flag.Parse()
-	arg := flag.Arg(1)
-
-	if arg == "dev" {
-		viper.AddConfigPath(path)
-		viper.SetConfigName("dev")
-		viper.SetConfigType("env")
-	} else {
-		viper.AddConfigPath(path)
-		viper.SetConfigName("prod")
-		viper.SetConfigType("env")
-	}
+	viper.AddConfigPath(path)
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
 

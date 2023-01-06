@@ -1,11 +1,15 @@
 development:
   dialect: postgres
-  datasource: postgresql://root:secret@localhost:5432/code_collection?sslmode=disable
+  datasource: postgresql://root:secret@postgres:5432/command_style?sslmode=disable
+  # datasource: postgresql://root:secret@localhost:5432/command_style?sslmode=disable
+  # datasource: postgresql://root:secret12@postgres.cglffkopv3rd.ap-northeast-1.rds.amazonaws.com
   dir: db/migrations
   table: migrations_management
 
 production:
   dialect: postgres
-  datasource: postgresql://root:secret@localhost:5432/code_collection?sslmode=disable
+  datasource: postgresql://root:secret@postgres:5432/command_style?sslmode=disable
+  # datasource: postgresql://root:secret@localhost:5432/command_style?sslmode=disable
+  # datasource: "postgresql://root:secret12@postgres.cglffkopv3rd.ap-northeast-1.rds.amazonaws.com"
   dir: db/migrations
   table: migrations_management
