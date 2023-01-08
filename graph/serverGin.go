@@ -18,6 +18,7 @@ func (r *Resolver) GinRouter(tokenMaker token.Maker) {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
+			"http://localhost",
 			"http://localhost:80",
 			"http://localhost:3000",
 			"http://localhost:8080",

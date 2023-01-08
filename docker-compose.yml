@@ -6,8 +6,8 @@ services:
     ports:
       - 3000:3000
   postgres:
-    image: postgres:15-alpine
     container_name: postgres
+    build: ./postgres
     restart: always
     environment:
       - POSTGRES_USER=root
@@ -17,6 +17,8 @@ services:
       - 5432:5432
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
+      - ./postgres/script:/docker-entrypoint-initdb.d
+      - ./postgres/conf:/etc/postgresql/postgresql.conf
   redis:
     image: redis:7.0-alpine
     container_name: redis
@@ -37,7 +39,5 @@ services:
       - redis
     ports:
       - 8080:8080
-    environment:
-      - DB_SOURCE=postgresql://root:secret@postgres:5432/command_style?sslmode=disable
     entrypoint: ["/app/start.sh"]
     command: ["/app/main"]
