@@ -1,5 +1,10 @@
 version: "3.9"
 services:
+  # nginx:
+  #   container_name: "nginx"
+  #   build: ../app/nginx
+  #   ports:
+  #     - 80:80
   nextjs:
     container_name: "nextjs"
     build: ../app
