@@ -1,3 +1,5 @@
+<code><img height="40" src="./specification.png"></code>
+
 task
 postgres store image type OK
 
