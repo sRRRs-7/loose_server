@@ -186,7 +186,7 @@ func (r *mutationResolver) CreateToken(ctx context.Context, username string) (st
 	return res, nil
 }
 
-func (r *mutationResolver) CreateAdminToken(ctx context.Context, username string) (string, error) {
+func (r *mutationResolver) CreateAdminToken(ctx context.Context, username string, password string) (string, error) {
 	res, err := r.CreateAdminTokenResolver(ctx, username)
 	if err != nil {
 		return "", fmt.Errorf("CreateAdminToken error: %v", err)

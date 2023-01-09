@@ -102,7 +102,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AdminCreateCode       func(childComplexity int, username string, code string, img string, description string, performance string, star []int, tags []string, access int) int
 		CreateAdminCollection func(childComplexity int, userID int, codeID int) int
-		CreateAdminToken      func(childComplexity int, username string) int
+		CreateAdminToken      func(childComplexity int, username string, password string) int
 		CreateAdminUser       func(childComplexity int, username string, password string) int
 		CreateCode            func(childComplexity int, code string, img string, description string, performance string, star []int, tags []string, access int) int
 		CreateCollection      func(childComplexity int, codeID int) int
@@ -189,7 +189,7 @@ type MutationResolver interface {
 	LoginUser(ctx context.Context, username string, password string) (*model.LoginUserResponse, error)
 	DeleteUser(ctx context.Context, username string) (*model.MutationResponse, error)
 	CreateToken(ctx context.Context, username string) (string, error)
-	CreateAdminToken(ctx context.Context, username string) (string, error)
+	CreateAdminToken(ctx context.Context, username string, password string) (string, error)
 }
 type QueryResolver interface {
 	GetAllCodes(ctx context.Context, limit int, skip int) ([]*model.Code, error)
@@ -519,7 +519,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateAdminToken(childComplexity, args["username"].(string)), true
+		return e.complexity.Mutation.CreateAdminToken(childComplexity, args["username"].(string), args["password"].(string)), true
 
 	case "Mutation.createAdminUser":
 		if e.complexity.Mutation.CreateAdminUser == nil {
@@ -1249,7 +1249,7 @@ extend type Mutation {
 # token
 extend type Mutation {
   createToken(username: String!): String!
-  createAdminToken(username: String!): String!
+  createAdminToken(username: String!, password: String!): String!
 }
 
 type MutationResponse implements Node {
@@ -1394,6 +1394,15 @@ func (ec *executionContext) field_Mutation_createAdminToken_args(ctx context.Con
 		}
 	}
 	args["username"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["password"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["password"] = arg1
 	return args, nil
 }
 
@@ -5265,7 +5274,7 @@ func (ec *executionContext) _Mutation_createAdminToken(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateAdminToken(rctx, fc.Args["username"].(string))
+		return ec.resolvers.Mutation().CreateAdminToken(rctx, fc.Args["username"].(string), fc.Args["password"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

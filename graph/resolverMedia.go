@@ -8,6 +8,8 @@ import (
 
 	db "github.com/sRRRs-7/loose_style.git/db/sqlc"
 	"github.com/sRRRs-7/loose_style.git/graph/model"
+	"github.com/sRRRs-7/loose_style.git/session"
+	"github.com/sRRRs-7/loose_style.git/utils"
 )
 
 // mutation
@@ -15,6 +17,23 @@ func (r *mutationResolver) CreateMediaResolver(ctx context.Context, title string
 	gc, err := GinContextFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("gin context convert error: %v", err)
+	}
+
+	cookie, err := gc.Cookie("a0746dda4c2a0269")
+	if err != nil {
+		return nil, fmt.Errorf("CreateCollectionResolver cookie error: %v", err)
+	}
+
+	// redis value get
+	redisValue := session.GetRedis(gc, cookie)
+	if redisValue == nil {
+		return nil, fmt.Errorf("get all cart item error get redis value is nil : %v", err)
+	}
+	// string processing
+	name := utils.GetUsername(redisValue)
+
+	if name != "srrrs" {
+		return nil, fmt.Errorf("deffer admin user name")
 	}
 
 	args := db.CreateMediaParams{

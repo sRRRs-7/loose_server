@@ -18,6 +18,23 @@ func (r *mutationResolver) CreateAdminCollectionResolver(ctx context.Context, us
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
+	cookie, err := gc.Cookie("a0746dda4c2a0269")
+	if err != nil {
+		return nil, fmt.Errorf("CreateCollectionResolver cookie error: %v", err)
+	}
+
+	// redis value get
+	redisValue := session.GetRedis(gc, cookie)
+	if redisValue == nil {
+		return nil, fmt.Errorf("get all cart item error get redis value is nil : %v", err)
+	}
+	// string processing
+	name := utils.GetUsername(redisValue)
+
+	if name != "srrrs" {
+		return nil, fmt.Errorf("deffer admin user name")
+	}
+
 	args := db.CreateCollectionParams{
 		UserID: int64(userID),
 		CodeID: int64(codeID),

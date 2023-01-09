@@ -33,8 +33,8 @@ func NewSession(gc *gin.Context, cookieKey string, accessToken string, info []by
 	// set redis
 	rClient.Set(gc, accessToken, info, redisExpired)
 	// set cookie
-	gc.SetCookie(cookieKey, accessToken, cookieExpired, "/", "localhost", true, true)
-	// gc.SetCookie(cookieKey, hashToken, cookieExpired, "/", "command-style.com", true, true)
+	// gc.SetCookie(cookieKey, accessToken, cookieExpired, "/", "localhost", true, true)
+	gc.SetCookie(cookieKey, accessToken, cookieExpired, "/", "command-style.com", true, true)
 
 	return nil
 }
@@ -69,8 +69,8 @@ func DeleteSession(gc *gin.Context, cookieKey string) {
 		fmt.Printf("Delete session error cookie and redis cannot delete record")
 	}
 	// delete cookie
-	gc.SetCookie(cookieKey, "", -1, "/", "localhost", true, true)
-	// gc.SetCookie(cookieKey, "", -1, "/", "command-style.com", true, true)
+	// gc.SetCookie(cookieKey, "", -1, "/", "localhost", true, true)
+	gc.SetCookie(cookieKey, "", -1, "/", "command-style.com", true, true)
 }
 
 // redis value get

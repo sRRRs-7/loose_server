@@ -192,7 +192,7 @@ extend type Mutation {
 # token
 extend type Mutation {
   createToken(username: String!): String!
-  createAdminToken(username: String!): String!
+  createAdminToken(username: String!, password: String!): String!
 }
 
 type MutationResponse implements Node {

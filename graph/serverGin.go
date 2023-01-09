@@ -37,16 +37,16 @@ func (r *Resolver) GinRouter(tokenMaker token.Maker) {
 		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
 	})
 
-	// bearer auth router
+	// auth router
 	playGroundRouter := router.Group("/")
 	playGroundRouter.Use(GinContextToContextCookie(tokenMaker))
 	playGroundRouter.Use(dataloaders.DataLoaderMiddleware(r.store))
 	playGroundRouter.POST("/query", graphqlHandler(r))
 	playGroundRouter.GET("/query", graphqlHandler(r))
 
-	// bearer auth router
+	// auth router
 	adminRouter := router.Group("/admin")
-	adminRouter.Use(GinContextMiddleware())
+	adminRouter.Use(GinContextToContextCookie(tokenMaker))
 	adminRouter.POST("/query", graphqlHandler(r))
 	adminRouter.GET("/query", playgroundHandler())
 
