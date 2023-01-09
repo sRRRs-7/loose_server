@@ -1,4 +1,4 @@
-<code><img height='40' src='./specification.png'></code>
+<code><img height='1300' width='2000' src='./specification.png'></code>
 
 task
 postgres store image type OK
