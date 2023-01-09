@@ -1,5 +1,6 @@
 command-style
-<code><img height='500' width='2000' src='./specification.png'></code>
+<code><img height='500' width='2000' src='./img/specification.png'></code>
+<code><img height='500' width='2000' src='./img/DB.png'></code>
 
 task
 postgres store image type OK
