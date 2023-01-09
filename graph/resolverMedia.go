@@ -136,6 +136,5 @@ func (r *queryResolver) GetAllMediaResolver(ctx context.Context, first int, skip
 		}
 	}
 
-	fmt.Println(convertMedias)
 	return convertMedias, nil
 }

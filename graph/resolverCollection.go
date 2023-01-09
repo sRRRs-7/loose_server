@@ -3,9 +3,7 @@ package graph
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	"github.com/sRRRs-7/loose_style.git/cryptography"
 	db "github.com/sRRRs-7/loose_style.git/db/sqlc"
 	"github.com/sRRRs-7/loose_style.git/graph/model"
 	"github.com/sRRRs-7/loose_style.git/session"
@@ -44,18 +42,23 @@ func (r *mutationResolver) CreateCollectionResolver(ctx context.Context, codeID 
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
-	// user id get from redis
-	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
-	fields := strings.Split(authorizationHeader, " ")
-	accessToken := fields[1]
+	// // user id get from redis
+	// authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	// fields := strings.Split(authorizationHeader, " ")
+	// accessToken := fields[1]
 
-	key, err := cryptography.HashPassword(accessToken)
+	// key, err := cryptography.HashPassword(accessToken)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("CreateCollectionResolver error: %v", err)
+	// }
+
+	cookie, err := gc.Cookie("228e81fb33c862aa")
 	if err != nil {
-		return nil, fmt.Errorf("CreateCollectionResolver error: %v", err)
+		return nil, fmt.Errorf("CreateCollectionResolver cookie error: %v", err)
 	}
 
 	// redis value get
-	redisValue := session.GetRedis(gc, key)
+	redisValue := session.GetRedis(gc, cookie)
 	if redisValue == nil {
 		return nil, fmt.Errorf("GetAllCollection error for redis value is nil: %v", err)
 	}
@@ -102,19 +105,27 @@ func (r *mutationResolver) GetCollectionResolver(ctx context.Context, id int) (*
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
-	// user id get from redis
-	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
-	fields := strings.Split(authorizationHeader, " ")
+	// // user id get from redis
+	// authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	// fields := strings.Split(authorizationHeader, " ")
 
-	var username string
-	if fields[1] != "undefined" {
-		accessToken := fields[1]
-		key, _ := cryptography.HashPassword(accessToken)
-		// redis value get
-		redisValue := session.GetRedis(gc, key)
-		// string processing
-		username = utils.GetUsername(redisValue)
+	// var username string
+	// if fields[1] != "undefined" {
+	// 	accessToken := fields[1]
+	// 	key, _ := cryptography.HashPassword(accessToken)
+	// 	// redis value get
+	// 	redisValue := session.GetRedis(gc, key)
+	// 	// string processing
+	// 	username = utils.GetUsername(redisValue)
+	// }
+
+	cookie, err := gc.Cookie("228e81fb33c862aa")
+	if err != nil {
+		return nil, fmt.Errorf("GetCollectionResolver cookie error: %v", err)
 	}
+	redisValue := session.GetRedis(gc, cookie)
+	// string processing
+	username := utils.GetUsername(redisValue)
 
 	// transaction
 	tx, err := r.tx.Begin(gc)
@@ -188,16 +199,22 @@ func (r *queryResolver) GetAllCollectionResolver(ctx context.Context, limit, ski
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
-	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
-	fields := strings.Split(authorizationHeader, " ")
-	accessToken := fields[1]
+	// authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	// fields := strings.Split(authorizationHeader, " ")
+	// accessToken := fields[1]
 
-	key, err := cryptography.HashPassword(accessToken)
+	// key, err := cryptography.HashPassword(accessToken)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("GetAllCollectionResolver error: %v", err)
+	// }
+
+	cookie, err := gc.Cookie("228e81fb33c862aa")
 	if err != nil {
-		return nil, fmt.Errorf("GetAllCollectionResolver error: %v", err)
+		return nil, fmt.Errorf("GetAllCollectionResolver cookie error: %v", err)
 	}
+
 	// redis value get
-	redisValue := session.GetRedis(gc, key)
+	redisValue := session.GetRedis(gc, cookie)
 	if redisValue == nil {
 		return nil, fmt.Errorf("GetAllCollectionResolver error in get redis value : %v", err)
 	}
@@ -267,16 +284,22 @@ func (r *queryResolver) GetAllCollectionBySearchResolver(ctx context.Context, ke
 		return nil, fmt.Errorf("gin context convert error: %v", err)
 	}
 
-	authorizationHeader := gc.GetHeader(authorizationHeaderKey)
-	fields := strings.Split(authorizationHeader, " ")
-	accessToken := fields[1]
+	// authorizationHeader := gc.GetHeader(authorizationHeaderKey)
+	// fields := strings.Split(authorizationHeader, " ")
+	// accessToken := fields[1]
 
-	key, err := cryptography.HashPassword(accessToken)
+	// key, err := cryptography.HashPassword(accessToken)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("GetAllCollectionBySearchResolver error: %v", err)
+	// }
+
+	cookie, err := gc.Cookie("228e81fb33c862aa")
 	if err != nil {
-		return nil, fmt.Errorf("GetAllCollectionBySearchResolver error: %v", err)
+		return nil, fmt.Errorf("GetAllCollectionBySearchResolver cookie error: %v", err)
 	}
+
 	// redis value get
-	redisValue := session.GetRedis(gc, key)
+	redisValue := session.GetRedis(gc, cookie)
 	if redisValue == nil {
 		return nil, fmt.Errorf("GetAllCollectionBySearchResolver error for get redis value: %v", err)
 	}

@@ -39,7 +39,7 @@ func (r *Resolver) GinRouter(tokenMaker token.Maker) {
 
 	// bearer auth router
 	playGroundRouter := router.Group("/")
-	playGroundRouter.Use(GinContextToContextMiddleware(tokenMaker))
+	playGroundRouter.Use(GinContextToContextCookie(tokenMaker))
 	playGroundRouter.Use(dataloaders.DataLoaderMiddleware(r.store))
 	playGroundRouter.POST("/query", graphqlHandler(r))
 	playGroundRouter.GET("/query", graphqlHandler(r))

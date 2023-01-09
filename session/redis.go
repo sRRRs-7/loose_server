@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v9"
-	"github.com/sRRRs-7/loose_style.git/cryptography"
 )
 
 var rClient *redis.Client
@@ -27,15 +26,15 @@ func NewRedis() *redis.Client {
 
 // use login cookie hashToken == redis key
 func NewSession(gc *gin.Context, cookieKey string, accessToken string, info []byte, redisExpired time.Duration, cookieExpired int) error {
-	hashToken, err := cryptography.HashPassword(accessToken)
-	if err != nil {
-		return fmt.Errorf("new session error cannot convert hash token: %v", err)
-	}
+	// hashToken, err := cryptography.HashPassword(accessToken)
+	// if err != nil {
+	// 	return fmt.Errorf("new session error cannot convert hash token: %v", err)
+	// }
 	// set redis
-	rClient.Set(gc, hashToken, info, redisExpired)
+	rClient.Set(gc, accessToken, info, redisExpired)
 	// set cookie
-	// gc.SetCookie(cookieKey, hashToken, cookieExpired, "/", "localhost", true, false)
-	gc.SetCookie(cookieKey, hashToken, cookieExpired, "/", "command-style.com", true, false)
+	gc.SetCookie(cookieKey, accessToken, cookieExpired, "/", "localhost", true, true)
+	// gc.SetCookie(cookieKey, hashToken, cookieExpired, "/", "command-style.com", true, true)
 
 	return nil
 }
@@ -43,13 +42,13 @@ func NewSession(gc *gin.Context, cookieKey string, accessToken string, info []by
 // check per access
 func GetSession(gc *gin.Context, accessToken string) interface{} {
 	// get redis value
-	hashToken, err := cryptography.HashPassword(accessToken)
-	if err != nil {
-		fmt.Printf("redis access token hash error : %v \n", err)
-		return nil
-	}
+	// hashToken, err := cryptography.HashPassword(accessToken)
+	// if err != nil {
+	// 	fmt.Printf("redis access token hash error : %v \n", err)
+	// 	return nil
+	// }
 
-	redisValue, err := rClient.Get(gc, hashToken).Result()
+	redisValue, err := rClient.Get(gc, accessToken).Result()
 	if err == redis.Nil {
 		fmt.Printf("Get session error cannot get redis value because of value is not set: %v \n", err)
 		return nil
@@ -70,8 +69,8 @@ func DeleteSession(gc *gin.Context, cookieKey string) {
 		fmt.Printf("Delete session error cookie and redis cannot delete record")
 	}
 	// delete cookie
-	// gc.SetCookie(cookieKey, "", -1, "/", "localhost", true, false)
-	gc.SetCookie(cookieKey, "", -1, "/", "command-style.com", true, false)
+	gc.SetCookie(cookieKey, "", -1, "/", "localhost", true, true)
+	// gc.SetCookie(cookieKey, "", -1, "/", "command-style.com", true, true)
 }
 
 // redis value get
